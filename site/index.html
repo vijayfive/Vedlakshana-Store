@@ -59,7 +59,7 @@
   .lock-screen{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:28px; padding:32px 24px; text-align:center;}
   .lock-mark{width:72px; height:72px; border-radius:20px; background:var(--accent2); overflow:hidden; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow);}
   .lock-mark img{width:100%; height:100%; object-fit:cover;}
-  .lock-title{font-size:22px; font-weight:600;}
+  .lock-title{font-family:"Sora",system-ui,sans-serif; font-size:24px; font-weight:700; color:var(--accent); letter-spacing:-.01em;}
   .lock-sub{color:var(--ink-muted); font-size:14px; margin-top:4px;}
   .pin-dots{display:flex; gap:14px; margin:6px 0;}
   .pin-dot{width:14px; height:14px; border-radius:50%; border:2px solid var(--ink-faint); background:transparent; transition:background .12s,border-color .12s;}
@@ -72,7 +72,7 @@
   .lock-error{color:var(--danger); font-size:13px; min-height:18px;}
 
   .topbar{display:flex; align-items:baseline; justify-content:space-between; padding:18px 20px 12px; position:sticky; top:0; background:var(--bg); z-index:5;}
-  .topbar .store-name{font-size:19px; font-weight:600;}
+  .topbar .store-name{font-family:"Sora",system-ui,sans-serif; font-size:20px; font-weight:700; color:var(--accent); letter-spacing:-.01em;}
   .topbar .date{font-size:12px; color:var(--ink-muted); font-family:"IBM Plex Mono",monospace;}
   .screen{flex:1; overflow-y:auto; padding:0 16px 96px;}
   .navbar{position:sticky; bottom:0; display:flex; background:var(--surface); border-top:1px solid var(--border); padding:6px 4px calc(6px + env(safe-area-inset-bottom)); gap:2px; z-index:10;}
@@ -211,7 +211,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   var unlocked = false;
   var pinBuffer = '';
   var pinError = false;
-  var tab = 'bill';
+  var tab = 'home';
   var cart = {};
   var search = '';
   var sheetOpen = false;
@@ -308,6 +308,9 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     return ts >= rangeStart(r);
   }
   function money(n){ return '₹' + Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2}); }
+  // jsPDF's built-in fonts (Helvetica) have no ₹ glyph — it prints as a stray "1" or box.
+  // Use a plain "Rs." prefix for anything written into the PDF instead.
+  function moneyPdf(n){ return 'Rs. ' + Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2}); }
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
   /* ---------- backend sync ---------- */
@@ -433,14 +436,14 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     doc.setFontSize(10);
     sale.items.forEach(function(it){
       doc.text(it.name + '  x' + it.qty, 10, y);
-      doc.text(money(it.price*it.qty), 132, y, {align:'right'});
+      doc.text(moneyPdf(it.price*it.qty), 132, y, {align:'right'});
       y += 6;
     });
     y += 2;
     doc.line(10, y, 135, y); y += 7;
     doc.setFontSize(12);
     doc.text('Total', 10, y);
-    doc.text(money(sale.total), 132, y, {align:'right'});
+    doc.text(moneyPdf(sale.total), 132, y, {align:'right'});
     y += 8;
     doc.setFontSize(9);
     doc.text('Paid via ' + sale.paymentMethod, 10, y);
@@ -471,7 +474,8 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     wrap.style.display='flex'; wrap.style.flexDirection='column'; wrap.style.minHeight='100vh'; wrap.style.flex='1';
     wrap.appendChild(renderTopbar());
     var screen = document.createElement('div'); screen.className='screen';
-    if(tab==='bill') screen.appendChild(renderBilling());
+    if(tab==='home') screen.appendChild(renderHome());
+    else if(tab==='bill') screen.appendChild(renderBilling());
     else if(tab==='inv') screen.appendChild(renderInventory());
     else if(tab==='exp') screen.appendChild(renderExpenses());
     else if(tab==='rep') screen.appendChild(renderReports());
@@ -566,7 +570,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   }
   function renderNav(){
     var n = el('div','navbar');
-    [['bill','🧾','Bill'],['inv','📦','Stock'],['exp','💸','Expenses'],['rep','📊','Reports'],['set','⚙️','Settings']].forEach(function(x){
+    [['home','🏠','Home'],['bill','🧾','Bill'],['inv','📦','Stock'],['exp','💸','Expenses'],['rep','📊','Reports'],['set','⚙️','Settings']].forEach(function(x){
       var b = el('button','nav-btn'+(tab===x[0]?' active':''));
       b.appendChild(el('div','ic',x[1]));
       b.appendChild(el('div','',x[2]));
@@ -574,6 +578,79 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
       n.appendChild(b);
     });
     return n;
+  }
+
+  /* ---- home dashboard ---- */
+  function renderHome(){
+    var w = document.createElement('div');
+    var tKey = todayKey(Date.now());
+    var todaySales = state.sales.filter(function(s){ return todayKey(s.ts)===tKey; });
+    var todayTotal = todaySales.reduce(function(sum,s){return sum+s.total;},0);
+    var todayCost = todaySales.reduce(function(sum,s){ return sum + s.items.reduce(function(a,it){return a+(it.costPrice||0)*it.qty;},0); },0);
+    var profit = todayTotal - todayCost;
+    var todayExpenses = state.expenses.filter(function(x){return todayKey(x.ts)===tKey;}).reduce(function(s,x){return s+x.amount;},0);
+
+    w.appendChild(el('div','section-label', 'Today — ' + new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short'})));
+    var stats = el('div','stat-row stat-row3');
+    var c1=el('div','stat-card'); c1.appendChild(el('div','sv num',money(todayTotal))); c1.appendChild(el('div','sl','Sales'));
+    var c2=el('div','stat-card'); c2.appendChild(el('div','sv num',String(todaySales.length))); c2.appendChild(el('div','sl','Bills'));
+    var c3=el('div','stat-card'); c3.appendChild(el('div','sv num',money(profit))); c3.appendChild(el('div','sl','Profit (est.)'));
+    stats.appendChild(c1); stats.appendChild(c2); stats.appendChild(c3);
+    w.appendChild(stats);
+
+    if(todayExpenses>0){
+      var expRow = el('div','stat-row'); expRow.style.marginTop='10px';
+      var ec = el('div','stat-card'); ec.appendChild(el('div','sv num', money(todayExpenses))); ec.appendChild(el('div','sl','Expenses today'));
+      var nc = el('div','stat-card'); nc.appendChild(el('div','sv num', money(todayTotal-todayExpenses))); nc.appendChild(el('div','sl','Net (sales − expenses)'));
+      expRow.appendChild(ec); expRow.appendChild(nc);
+      w.appendChild(expRow);
+    }
+
+    var lowT = state.lowStockThreshold||5;
+    var lowCount = state.products.filter(function(p){return p.stock<=lowT;}).length;
+    w.appendChild(el('div','section-label','Stock'));
+    var stockCard = el('div','card'); stockCard.style.padding='14px'; stockCard.style.display='flex'; stockCard.style.alignItems='center'; stockCard.style.justifyContent='space-between'; stockCard.style.gap='10px';
+    var stockText = document.createElement('div');
+    stockText.appendChild(el('div','sl2', lowCount ? (lowCount + ' product' + (lowCount===1?'':'s') + ' low or out of stock') : 'All products well stocked'));
+    stockText.appendChild(el('div','sd2', state.products.length + ' product' + (state.products.length===1?'':'s') + ' total'));
+    stockCard.appendChild(stockText);
+    var stockBtn = el('button','link-btn','View');
+    stockBtn.style.flex='0 0 auto';
+    stockBtn.onclick = function(){ tab='rep'; reportsSub='stock'; render(); };
+    stockCard.appendChild(stockBtn);
+    w.appendChild(stockCard);
+
+    w.appendChild(el('div','section-label','Quick actions'));
+    var actions = document.createElement('div'); actions.style.display='grid'; actions.style.gridTemplateColumns='1fr 1fr'; actions.style.gap='10px'; actions.style.marginTop='12px';
+    function mkAction(icon,label,fn){
+      var b = el('button','card'); b.style.padding='16px 12px'; b.style.textAlign='center'; b.style.display='flex'; b.style.flexDirection='column'; b.style.alignItems='center'; b.style.gap='6px'; b.style.fontSize='13px'; b.style.fontWeight='600'; b.style.color='var(--ink)';
+      var ic = document.createElement('div'); ic.style.fontSize='22px'; ic.textContent=icon;
+      b.appendChild(ic); b.appendChild(document.createTextNode(label));
+      b.onclick = fn;
+      return b;
+    }
+    actions.appendChild(mkAction('🧾','New sale', function(){ tab='bill'; render(); }));
+    actions.appendChild(mkAction('💸','Add expense', function(){ addingExpense={description:'',amount:'',category:'Misc'}; render(); }));
+    actions.appendChild(mkAction('📦','Manage stock', function(){ tab='inv'; render(); }));
+    actions.appendChild(mkAction('📊','View reports', function(){ tab='rep'; render(); }));
+    w.appendChild(actions);
+
+    if(state.sales.length){
+      w.appendChild(el('div','section-label','Recent sales'));
+      var recentCard = el('div','card'); recentCard.style.padding='2px 12px';
+      state.sales.slice(-5).reverse().forEach(function(s){
+        var row = el('div','sale-row');
+        var l = document.createElement('div');
+        l.appendChild(el('div','st', new Date(s.ts).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) + ' · ' + (s.paymentMethod||'Cash')));
+        l.appendChild(el('div','sd', s.items.map(function(it){return it.name+' ×'+it.qty;}).join(', ')));
+        row.appendChild(l);
+        row.appendChild(el('div','sv num', money(s.total)));
+        recentCard.appendChild(row);
+      });
+      w.appendChild(recentCard);
+    }
+
+    return w;
   }
 
   /* ---- billing ---- */
@@ -1085,7 +1162,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     l2 = document.createElement('div'); l2.appendChild(el('div','sl2','Lock app')); l2.appendChild(el('div','sd2','Return to PIN screen'));
     r2b.appendChild(l2);
     var e2b = el('button','link-btn','Lock now');
-    e2b.onclick = function(){ unlocked=false; bioAutoTried=false; tab='bill'; render(); };
+    e2b.onclick = function(){ unlocked=false; bioAutoTried=false; tab='home'; render(); };
     r2b.appendChild(e2b); card2.appendChild(r2b);
     var r2c = el('div','settings-row');
     var l2c = document.createElement('div'); l2c.appendChild(el('div','sl2','Fingerprint unlock'));
@@ -1118,7 +1195,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
 
   if('serviceWorker' in navigator){
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('./sw.js').catch(function(){});
+      navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'}).catch(function(){});
     });
   }
 
