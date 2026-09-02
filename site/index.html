@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Till</title>
+<title>Vedlakshana Store</title>
 <meta name="theme-color" content="#0F6E63">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Till">
+<meta name="apple-mobile-web-app-title" content="Vedlakshana Store">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
   :root{
@@ -49,7 +49,7 @@
   h1,h2,h3{font-family:"Sora",system-ui,sans-serif; margin:0; text-wrap:balance; letter-spacing:-.01em;}
   .num{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums;}
   button{font-family:inherit; cursor:pointer;}
-  button:focus-visible, input:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  button:focus-visible, input:focus-visible, select:focus-visible, [tabindex]:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
   @media (prefers-reduced-motion:reduce){ *{animation-duration:.001ms!important; transition-duration:.001ms!important;} }
 
   .lock-screen{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:28px; padding:32px 24px; text-align:center;}
@@ -70,9 +70,9 @@
   .topbar .store-name{font-size:19px; font-weight:600;}
   .topbar .date{font-size:12px; color:var(--ink-muted); font-family:"IBM Plex Mono",monospace;}
   .screen{flex:1; overflow-y:auto; padding:0 16px 96px;}
-  .navbar{position:sticky; bottom:0; display:flex; background:var(--surface); border-top:1px solid var(--border); padding:6px 6px calc(6px + env(safe-area-inset-bottom)); gap:4px; z-index:10;}
-  .nav-btn{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 0 6px; border:none; background:none; border-radius:12px; color:var(--ink-faint); font-size:11px; font-weight:500;}
-  .nav-btn .ic{font-size:19px;}
+  .navbar{position:sticky; bottom:0; display:flex; background:var(--surface); border-top:1px solid var(--border); padding:6px 4px calc(6px + env(safe-area-inset-bottom)); gap:2px; z-index:10;}
+  .nav-btn{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 0 6px; border:none; background:none; border-radius:12px; color:var(--ink-faint); font-size:10.5px; font-weight:500;}
+  .nav-btn .ic{font-size:18px;}
   .nav-btn.active{color:var(--accent); background:var(--accent-soft);}
 
   .section-label{font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); margin:20px 2px 10px;}
@@ -98,7 +98,7 @@
   .cart-bar button{background:rgba(255,255,255,.18); color:var(--accent-ink); border:none; padding:9px 16px; border-radius:10px; font-weight:600; font-size:13px;}
 
   .sheet-backdrop{position:fixed; inset:0; background:rgba(20,18,14,.45); z-index:40; display:flex; align-items:flex-end; justify-content:center;}
-  .sheet{width:100%; max-width:560px; background:var(--surface); border-radius:20px 20px 0 0; padding:18px 18px calc(18px + env(safe-area-inset-bottom)); max-height:82vh; overflow-y:auto;}
+  .sheet{width:100%; max-width:560px; background:var(--surface); border-radius:20px 20px 0 0; padding:18px 18px calc(18px + env(safe-area-inset-bottom)); max-height:86vh; overflow-y:auto;}
   .sheet-handle{width:36px; height:4px; background:var(--border); border-radius:2px; margin:0 auto 14px;}
   .sheet h3{font-size:17px; margin-bottom:4px;}
   .cart-row{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border);}
@@ -116,21 +116,24 @@
   .btn-secondary{width:100%; background:var(--surface-2); color:var(--ink); border:1px solid var(--border); padding:12px; border-radius:12px; font-size:14px; font-weight:500; margin-top:8px;}
   .btn-danger-text{width:100%; background:none; border:none; color:var(--danger); font-size:13px; padding:10px; margin-top:2px;}
 
-  .inv-row{display:flex; align-items:center; gap:12px; padding:13px 4px; border-bottom:1px solid var(--border);}
+  .inv-row{display:flex; align-items:center; gap:10px; padding:13px 4px; border-bottom:1px solid var(--border);}
   .inv-row:last-child{border-bottom:none;}
   .inv-row .iname{font-size:14px; font-weight:500;}
-  .inv-row .iprice{font-size:12px; color:var(--ink-muted); margin-top:1px;}
-  .stock-pill{margin-left:auto; font-size:12px; font-weight:600; padding:4px 9px; border-radius:999px; white-space:nowrap;}
+  .inv-row .iprice{font-size:11.5px; color:var(--ink-muted); margin-top:1px;}
+  .stock-pill{font-size:12px; font-weight:600; padding:4px 9px; border-radius:999px; white-space:nowrap;}
   .stock-pill.ok{background:var(--success-soft); color:var(--success);}
   .stock-pill.low{background:var(--warning-soft); color:var(--warning);}
   .stock-pill.out{background:var(--danger-soft); color:var(--danger);}
+  .restock-btn{background:var(--accent-soft); color:var(--accent); border:none; font-size:11px; font-weight:700; padding:6px 9px; border-radius:8px; white-space:nowrap;}
   .fab{position:fixed; right:calc(50% - 280px + 18px); bottom:80px; width:52px; height:52px; border-radius:50%; background:var(--accent); color:var(--accent-ink); border:none; font-size:24px; box-shadow:var(--shadow); z-index:8;}
   @media (max-width:559px){ .fab{right:18px;} }
   .field{margin-top:14px;}
   .field label{display:block; font-size:12px; font-weight:600; color:var(--ink-muted); margin-bottom:6px;}
-  .field input{width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--ink); font-size:15px;}
+  .field input, .field select{width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--ink); font-size:15px;}
 
   .stat-row{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;}
+  .stat-row3{grid-template-columns:repeat(3,1fr);}
+  .stat-row3 .sv{font-size:17px;}
   .stat-card{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px;}
   .stat-card .sv{font-size:22px; font-weight:700; font-family:"IBM Plex Mono",monospace;}
   .stat-card .sl{font-size:11.5px; color:var(--ink-muted); margin-top:2px;}
@@ -143,6 +146,18 @@
   .sale-row .st{font-size:11px; color:var(--ink-muted); font-family:"IBM Plex Mono",monospace;}
   .sale-row .sd{font-size:13px; margin-top:2px;}
   .sale-row .sv{font-weight:600; font-size:14px; white-space:nowrap;}
+
+  .subtabs{display:flex; gap:6px; margin-top:12px; overflow-x:auto; padding-bottom:2px;}
+  .subtab-btn{flex:0 0 auto; padding:7px 14px; border-radius:999px; border:1px solid var(--border); background:var(--surface); color:var(--ink-muted); font-size:12.5px; font-weight:600; white-space:nowrap;}
+  .subtab-btn.active{background:var(--accent-soft); border-color:var(--accent); color:var(--accent);}
+
+  .segmented{display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;}
+  .seg-btn{flex:1; min-width:70px; padding:10px 6px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--ink-muted); font-size:12.5px; font-weight:600; text-align:center;}
+  .seg-btn.active{background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
+
+  .receipt-item{display:flex; justify-content:space-between; padding:7px 0; font-size:13px; border-bottom:1px dashed var(--border);}
+  .receipt-item:last-child{border-bottom:none;}
+  .small-note{font-size:11.5px; color:var(--ink-faint); margin-top:6px;}
 
   .settings-row{display:flex; align-items:center; justify-content:space-between; padding:14px 4px; border-bottom:1px solid var(--border);}
   .settings-row:last-child{border-bottom:none;}
@@ -159,6 +174,7 @@
 <body>
 <div id="app"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 /* =========================================================================
    CONFIGURE THESE TWO VALUES after you deploy Code.gs as a Google Apps
@@ -170,23 +186,28 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
 
 (function(){
 
+  var PAYMENT_METHODS = ['Cash','UPI','Card','Other'];
+  var EXPENSE_CATEGORIES = ['Rent','Electricity','Salary','Transport','Misc','Other'];
+
   var DEFAULT_STATE = {
-    storeName: 'My Store2',
+    storeName: 'Vedlakshana Store',
     pin: '1234',
     lowStockThreshold: 5,
     products: [
-      {id:'p1',name:'Tea Packet 250g',price:90,stock:18},
-      {id:'p2',name:'Rice 1kg',price:65,stock:30},
-      {id:'p3',name:'Sugar 1kg',price:48,stock:22},
-      {id:'p4',name:'Milk 500ml',price:30,stock:12},
-      {id:'p5',name:'Cooking Oil 1L',price:150,stock:9},
-      {id:'p6',name:'Bread',price:40,stock:4},
-      {id:'p7',name:'Biscuit Pack',price:20,stock:40},
-      {id:'p8',name:'Soap Bar',price:35,stock:25},
-      {id:'p9',name:'Detergent 1kg',price:110,stock:3},
-      {id:'p10',name:'Salt 1kg',price:22,stock:28}
+      {id:'p1',name:'Tea Packet 250g',price:90,costPrice:65,stock:18},
+      {id:'p2',name:'Rice 1kg',price:65,costPrice:52,stock:30},
+      {id:'p3',name:'Sugar 1kg',price:48,costPrice:40,stock:22},
+      {id:'p4',name:'Milk 500ml',price:30,costPrice:26,stock:12},
+      {id:'p5',name:'Cooking Oil 1L',price:150,costPrice:128,stock:9},
+      {id:'p6',name:'Bread',price:40,costPrice:32,stock:4},
+      {id:'p7',name:'Biscuit Pack',price:20,costPrice:15,stock:40},
+      {id:'p8',name:'Soap Bar',price:35,costPrice:26,stock:25},
+      {id:'p9',name:'Detergent 1kg',price:110,costPrice:88,stock:3},
+      {id:'p10',name:'Salt 1kg',price:22,costPrice:16,stock:28}
     ],
-    sales: []
+    sales: [],
+    purchases: [],
+    expenses: []
   };
 
   var state = JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -200,6 +221,13 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   var search = '';
   var sheetOpen = false;
   var editingProduct = null;
+  var restockProduct = null;
+  var addingExpense = null;
+  var receiptSale = null;
+  var reportsSub = 'sales';
+  var cartCustomerName = '';
+  var cartCustomerPhone = '';
+  var cartPayment = 'Cash';
   var toastMsg = '';
   var toastTimer = null;
   var saving = false;
@@ -215,7 +243,11 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     fetch(SCRIPT_URL, {method:'GET'})
       .then(function(r){ return r.json(); })
       .then(function(data){
-        if(data && data.products) state = data;
+        if(data && data.products){
+          data.purchases = data.purchases || [];
+          data.expenses = data.expenses || [];
+          state = data;
+        }
         syncStatus = 'ok';
         render();
       })
@@ -244,17 +276,17 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   function showToast(msg){
     toastMsg = msg; render();
     if(toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(function(){ toastMsg=''; render(); }, 1800);
+    toastTimer = setTimeout(function(){ toastMsg=''; render(); }, 2200);
   }
 
-  /* ---------- mutations ---------- */
+  /* ---------- mutations: products ---------- */
   function addProduct(p){
-    state.products.push({id:uid(), name:p.name, price:Number(p.price)||0, stock:Number(p.stock)||0});
+    state.products.push({id:uid(), name:p.name, price:Number(p.price)||0, costPrice:Number(p.costPrice)||0, stock:Number(p.stock)||0});
     persist();
   }
   function updateProduct(id,p){
     var i = state.products.findIndex(function(x){return x.id===id;});
-    if(i>-1) state.products[i] = Object.assign({}, state.products[i], {name:p.name, price:Number(p.price)||0, stock:Number(p.stock)||0});
+    if(i>-1) state.products[i] = Object.assign({}, state.products[i], {name:p.name, price:Number(p.price)||0, costPrice:Number(p.costPrice)||0, stock:Number(p.stock)||0});
     persist();
   }
   function deleteProduct(id){
@@ -262,10 +294,24 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     delete cart[id];
     persist();
   }
+
+  /* ---------- mutations: stock inward (purchases) ---------- */
+  function recordPurchase(productId, qty, costPrice, newPrice){
+    var p = state.products.find(function(x){return x.id===productId;});
+    if(!p || qty<=0) return;
+    p.stock = (Number(p.stock)||0) + qty;
+    p.costPrice = costPrice;
+    if(newPrice!==undefined && !isNaN(newPrice) && newPrice>0) p.price = newPrice;
+    state.purchases.push({id:uid(), ts:Date.now(), productId:p.id, productName:p.name, qty:qty, costPrice:costPrice, total: qty*costPrice});
+    persist();
+    showToast('Stock added — ' + p.name);
+  }
+
+  /* ---------- mutations: sale ---------- */
   function completeSale(){
     var items = Object.keys(cart).map(function(pid){
       var p = state.products.find(function(x){return x.id===pid;});
-      return p ? {productId:pid, name:p.name, price:p.price, qty:cart[pid]} : null;
+      return p ? {productId:pid, name:p.name, price:p.price, costPrice:p.costPrice||0, qty:cart[pid]} : null;
     }).filter(Boolean);
     if(!items.length) return;
     var total = items.reduce(function(sum,it){ return sum + it.price*it.qty; },0);
@@ -273,15 +319,71 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
       var p = state.products.find(function(x){return x.id===it.productId;});
       if(p) p.stock = Math.max(0, p.stock - it.qty);
     });
-    state.sales.push({id:uid(), ts:Date.now(), items:items, total:total});
+    var sale = {
+      id: uid(), ts: Date.now(), items: items, total: total,
+      paymentMethod: cartPayment || 'Cash',
+      customerName: (cartCustomerName||'').trim(),
+      customerPhone: (cartCustomerPhone||'').trim()
+    };
+    state.sales.push(sale);
     cart = {};
     sheetOpen = false;
+    cartCustomerName = ''; cartCustomerPhone = ''; cartPayment = 'Cash';
+    receiptSale = sale;
     persist();
-    showToast('Sale saved — ' + money(total));
   }
+
+  /* ---------- mutations: expenses ---------- */
+  function addExpense(e){
+    state.expenses.push({id:uid(), ts:Date.now(), description:(e.description||'').trim(), amount:Number(e.amount)||0, category:e.category||'Misc'});
+    persist();
+  }
+
   function setPin(newPin){ state.pin = newPin; persist(); }
-  function setStoreName(name){ state.storeName = name || 'My Store'; persist(); }
+  function setStoreName(name){ state.storeName = name || 'Vedlakshana Store'; persist(); }
   function setThreshold(n){ state.lowStockThreshold = Math.max(1, Number(n)||5); persist(); }
+
+  /* ---------- PDF bill sharing ---------- */
+  function sharePdfBill(sale){
+    if(!(window.jspdf && window.jspdf.jsPDF)){ showToast('PDF library did not load — check your connection'); return; }
+    var doc = new window.jspdf.jsPDF({unit:'mm', format:'a5'});
+    var y = 15;
+    doc.setFontSize(14); doc.text(state.storeName || 'Store', 10, y); y += 7;
+    doc.setFontSize(9); doc.text(new Date(sale.ts).toLocaleString('en-IN'), 10, y); y += 6;
+    if(sale.customerName || sale.customerPhone){
+      doc.text('Customer: ' + [sale.customerName, sale.customerPhone].filter(Boolean).join(' - '), 10, y); y += 6;
+    }
+    y += 3;
+    doc.setFontSize(10);
+    sale.items.forEach(function(it){
+      doc.text(it.name + '  x' + it.qty, 10, y);
+      doc.text(money(it.price*it.qty), 132, y, {align:'right'});
+      y += 6;
+    });
+    y += 2;
+    doc.line(10, y, 135, y); y += 7;
+    doc.setFontSize(12);
+    doc.text('Total', 10, y);
+    doc.text(money(sale.total), 132, y, {align:'right'});
+    y += 8;
+    doc.setFontSize(9);
+    doc.text('Paid via ' + sale.paymentMethod, 10, y);
+
+    var blob = doc.output('blob');
+    var fileName = 'bill-' + sale.id + '.pdf';
+    try{
+      var file = new File([blob], fileName, {type:'application/pdf'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file], title: state.storeName || 'Bill', text: 'Bill from ' + (state.storeName || 'the store')}).catch(function(){});
+        return;
+      }
+    }catch(e){}
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a'); a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    showToast('PDF downloaded — attach it in WhatsApp manually');
+  }
 
   /* ---------- rendering ---------- */
   var root;
@@ -295,6 +397,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     var screen = document.createElement('div'); screen.className='screen';
     if(tab==='bill') screen.appendChild(renderBilling());
     else if(tab==='inv') screen.appendChild(renderInventory());
+    else if(tab==='exp') screen.appendChild(renderExpenses());
     else if(tab==='rep') screen.appendChild(renderReports());
     else screen.appendChild(renderSettings());
     wrap.appendChild(screen);
@@ -303,6 +406,9 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     root.appendChild(wrap);
     if(sheetOpen) root.appendChild(renderCartSheet());
     if(editingProduct!==null) root.appendChild(renderProductSheet());
+    if(restockProduct!==null) root.appendChild(renderRestockSheet());
+    if(addingExpense!==null) root.appendChild(renderExpenseSheet());
+    if(receiptSale!==null) root.appendChild(renderReceiptSheet());
     if(toastMsg){ var t=document.createElement('div'); t.className='toast'; t.textContent=toastMsg; root.appendChild(t); }
   }
   function el(tag, cls, txt){ var e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
@@ -310,7 +416,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   function renderLock(){
     var w = el('div','lock-screen');
     w.appendChild(el('div','lock-mark','🧾'));
-    w.appendChild(el('div','lock-title', state.storeName || 'My Store'));
+    w.appendChild(el('div','lock-title', state.storeName || 'Vedlakshana Store'));
     w.appendChild(el('div','lock-sub', configured ? 'Enter your 4-digit PIN' : 'Enter your 4-digit PIN — backend not configured yet, changes won\'t be saved'));
     var dots = el('div','pin-dots');
     for(var i=0;i<4;i++) dots.appendChild(el('div','pin-dot'+(i<pinBuffer.length?(pinError?' err':' filled'):'')));
@@ -343,7 +449,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   function renderTopbar(){
     var t = el('div','topbar');
     var l = document.createElement('div');
-    l.appendChild(el('div','store-name', state.storeName || 'My Store'));
+    l.appendChild(el('div','store-name', state.storeName || 'Vedlakshana Store'));
     t.appendChild(l);
     var right = document.createElement('div');
     right.style.textAlign = 'right';
@@ -357,7 +463,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   }
   function renderNav(){
     var n = el('div','navbar');
-    [['bill','🧾','Bill'],['inv','📦','Stock'],['rep','📊','Reports'],['set','⚙️','Settings']].forEach(function(x){
+    [['bill','🧾','Bill'],['inv','📦','Stock'],['exp','💸','Expenses'],['rep','📊','Reports'],['set','⚙️','Settings']].forEach(function(x){
       var b = el('button','nav-btn'+(tab===x[0]?' active':''));
       b.appendChild(el('div','ic',x[1]));
       b.appendChild(el('div','',x[2]));
@@ -367,6 +473,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     return n;
   }
 
+  /* ---- billing ---- */
   function renderBilling(){
     var w = document.createElement('div');
     var s = el('input','search'); s.placeholder='Search products…'; s.value=search;
@@ -437,6 +544,25 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
       sheet.appendChild(row);
     });
     if(ids.length){
+      sheet.appendChild(el('div','section-label','Customer (optional)'));
+      var custNameF = el('div','field');
+      var custNameI = el('input',''); custNameI.type='text'; custNameI.placeholder='Name'; custNameI.value=cartCustomerName;
+      custNameI.oninput = function(e){ cartCustomerName = e.target.value; };
+      custNameF.appendChild(custNameI); sheet.appendChild(custNameF);
+      var custPhoneF = el('div','field');
+      var custPhoneI = el('input',''); custPhoneI.type='tel'; custPhoneI.inputMode='tel'; custPhoneI.placeholder='Phone number'; custPhoneI.value=cartCustomerPhone;
+      custPhoneI.oninput = function(e){ cartCustomerPhone = e.target.value; };
+      custPhoneF.appendChild(custPhoneI); sheet.appendChild(custPhoneF);
+
+      sheet.appendChild(el('div','section-label','Payment method'));
+      var seg = el('div','segmented');
+      PAYMENT_METHODS.forEach(function(m){
+        var b = el('button','seg-btn'+(cartPayment===m?' active':''), m);
+        b.onclick = function(method){ return function(){ cartPayment=method; render(); }; }(m);
+        seg.appendChild(b);
+      });
+      sheet.appendChild(seg);
+
       var tr = el('div','sheet-total-row');
       tr.appendChild(el('span','','Total'));
       tr.appendChild(el('span','num', money(total)));
@@ -455,6 +581,41 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     return bd;
   }
 
+  function renderReceiptSheet(){
+    var sale = receiptSale;
+    var bd = el('div','sheet-backdrop');
+    bd.onclick = function(e){ if(e.target===bd){ receiptSale=null; render(); } };
+    var sheet = el('div','sheet');
+    sheet.appendChild(el('div','sheet-handle'));
+    sheet.appendChild(el('h3','','Sale complete'));
+    sheet.appendChild(el('div','small-note', new Date(sale.ts).toLocaleString('en-IN')));
+    var card = el('div','card'); card.style.padding='2px 12px'; card.style.marginTop='12px';
+    sale.items.forEach(function(it){
+      var row = el('div','receipt-item');
+      row.appendChild(el('span','', it.name + ' ×' + it.qty));
+      row.appendChild(el('span','num', money(it.price*it.qty)));
+      card.appendChild(row);
+    });
+    sheet.appendChild(card);
+    var tr = el('div','sheet-total-row');
+    tr.appendChild(el('span','','Total'));
+    tr.appendChild(el('span','num', money(sale.total)));
+    sheet.appendChild(tr);
+    if(sale.customerName || sale.customerPhone){
+      sheet.appendChild(el('div','small-note', 'Customer: ' + [sale.customerName, sale.customerPhone].filter(Boolean).join(' · ')));
+    }
+    sheet.appendChild(el('div','small-note', 'Paid via ' + sale.paymentMethod));
+    var share = el('button','btn-primary','Share bill (PDF)');
+    share.onclick = function(){ sharePdfBill(sale); };
+    sheet.appendChild(share);
+    var done = el('button','btn-secondary','Done');
+    done.onclick = function(){ receiptSale=null; render(); };
+    sheet.appendChild(done);
+    bd.appendChild(sheet);
+    return bd;
+  }
+
+  /* ---- inventory ---- */
   function renderInventory(){
     var w = document.createElement('div');
     w.appendChild(el('div','section-label', state.products.length + ' product' + (state.products.length===1?'':'s')));
@@ -462,22 +623,25 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     else{
       var card = el('div','card'); card.style.padding='4px 12px';
       var sorted = state.products.slice().sort(function(a,b){ return a.name.localeCompare(b.name); });
+      var lowT = state.lowStockThreshold || 5;
       sorted.forEach(function(p){
-        var row = el('div','inv-row'); row.style.cursor='pointer';
-        var mid = document.createElement('div'); mid.style.flex='1';
+        var row = el('div','inv-row');
+        var mid = document.createElement('div'); mid.style.flex='1'; mid.style.cursor='pointer';
         mid.appendChild(el('div','iname', p.name));
-        mid.appendChild(el('div','iprice', money(p.price)));
+        mid.appendChild(el('div','iprice', 'Cost ' + money(p.costPrice||0) + ' · Sale ' + money(p.price)));
+        mid.onclick = function(prod){ return function(){ editingProduct = Object.assign({},prod); render(); }; }(p);
         row.appendChild(mid);
-        var lowT = state.lowStockThreshold || 5;
+        var restockBtn = el('button','restock-btn','+ Stock');
+        restockBtn.onclick = function(prod){ return function(ev){ ev.stopPropagation(); restockProduct = {id:prod.id, name:prod.name, qty:'', costPrice: prod.costPrice||'', price: prod.price||''}; render(); }; }(p);
+        row.appendChild(restockBtn);
         var cls = p.stock<=0?'out':(p.stock<=lowT?'low':'ok');
         row.appendChild(el('span','stock-pill '+cls, p.stock<=0?'Out':p.stock+' left'));
-        row.onclick = function(prod){ return function(){ editingProduct = Object.assign({},prod); render(); }; }(p);
         card.appendChild(row);
       });
       w.appendChild(card);
     }
     var fab = el('button','fab','+');
-    fab.onclick = function(){ editingProduct = {id:null,name:'',price:'',stock:''}; render(); };
+    fab.onclick = function(){ editingProduct = {id:null,name:'',price:'',costPrice:'',stock:''}; render(); };
     w.appendChild(fab);
     return w;
   }
@@ -491,9 +655,12 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     var nameF = el('div','field'); nameF.appendChild(el('label','','Name'));
     var nameI = el('input',''); nameI.type='text'; nameI.value=editingProduct.name; nameI.placeholder='e.g. Amul Milk 500ml';
     nameI.oninput=function(e){editingProduct.name=e.target.value;}; nameF.appendChild(nameI); sheet.appendChild(nameF);
-    var priceF = el('div','field'); priceF.appendChild(el('label','','Price (₹)'));
+    var priceF = el('div','field'); priceF.appendChild(el('label','','Sale price (₹)'));
     var priceI = el('input',''); priceI.type='number'; priceI.inputMode='decimal'; priceI.value=editingProduct.price; priceI.placeholder='0';
     priceI.oninput=function(e){editingProduct.price=e.target.value;}; priceF.appendChild(priceI); sheet.appendChild(priceF);
+    var costF = el('div','field'); costF.appendChild(el('label','','Cost / purchase price (₹, optional)'));
+    var costI = el('input',''); costI.type='number'; costI.inputMode='decimal'; costI.value=editingProduct.costPrice||''; costI.placeholder='0';
+    costI.oninput=function(e){editingProduct.costPrice=e.target.value;}; costF.appendChild(costI); sheet.appendChild(costF);
     var stockF = el('div','field'); stockF.appendChild(el('label','','Stock on hand'));
     var stockI = el('input',''); stockI.type='number'; stockI.inputMode='numeric'; stockI.value=editingProduct.stock; stockI.placeholder='0';
     stockI.oninput=function(e){editingProduct.stock=e.target.value;}; stockF.appendChild(stockI); sheet.appendChild(stockF);
@@ -515,17 +682,129 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     bd.appendChild(sheet);
     return bd;
   }
+  function renderRestockSheet(){
+    var p = restockProduct;
+    var bd = el('div','sheet-backdrop');
+    bd.onclick = function(e){ if(e.target===bd){ restockProduct=null; render(); } };
+    var sheet = el('div','sheet');
+    sheet.appendChild(el('div','sheet-handle'));
+    sheet.appendChild(el('h3','','Stock inward — ' + p.name));
+    sheet.appendChild(el('div','small-note','Record new stock received for this product.'));
+    var qtyF = el('div','field'); qtyF.appendChild(el('label','','Quantity received'));
+    var qtyI = el('input',''); qtyI.type='number'; qtyI.inputMode='numeric'; qtyI.placeholder='0'; qtyI.value=p.qty;
+    qtyI.oninput=function(e){p.qty=e.target.value;}; qtyF.appendChild(qtyI); sheet.appendChild(qtyF);
+    var costF = el('div','field'); costF.appendChild(el('label','','Purchase price (₹ per unit)'));
+    var costI = el('input',''); costI.type='number'; costI.inputMode='decimal'; costI.placeholder='0'; costI.value=p.costPrice;
+    costI.oninput=function(e){p.costPrice=e.target.value;}; costF.appendChild(costI); sheet.appendChild(costF);
+    var priceF = el('div','field'); priceF.appendChild(el('label','','Sale price (₹ per unit)'));
+    var priceI = el('input',''); priceI.type='number'; priceI.inputMode='decimal'; priceI.placeholder='0'; priceI.value=p.price;
+    priceI.oninput=function(e){p.price=e.target.value;}; priceF.appendChild(priceI); sheet.appendChild(priceF);
+    var save = el('button','btn-primary','Add stock');
+    save.onclick = function(){
+      var qty = Number(p.qty)||0;
+      if(qty<=0) return;
+      recordPurchase(p.id, qty, Number(p.costPrice)||0, Number(p.price));
+      restockProduct = null; render();
+    };
+    sheet.appendChild(save);
+    var cancel = el('button','btn-secondary','Cancel');
+    cancel.onclick = function(){ restockProduct=null; render(); };
+    sheet.appendChild(cancel);
+    bd.appendChild(sheet);
+    return bd;
+  }
 
+  /* ---- expenses ---- */
+  function renderExpenses(){
+    var w = document.createElement('div');
+    var today = todayKey(Date.now());
+    var todayExp = state.expenses.filter(function(x){return todayKey(x.ts)===today;});
+    var total = todayExp.reduce(function(s,x){return s+x.amount;},0);
+    var stats = el('div','stat-row');
+    var c1=el('div','stat-card'); c1.appendChild(el('div','sv num',money(total))); c1.appendChild(el('div','sl',"Today's expenses"));
+    var c2=el('div','stat-card'); c2.appendChild(el('div','sv num',String(todayExp.length))); c2.appendChild(el('div','sl','Entries today'));
+    stats.appendChild(c1); stats.appendChild(c2); w.appendChild(stats);
+    w.appendChild(el('div','section-label','Today'));
+    if(!todayExp.length){ w.appendChild(el('div','empty','No expenses logged today.')); }
+    else{
+      var card=el('div','card'); card.style.padding='2px 12px';
+      todayExp.slice().reverse().forEach(function(x){
+        var row=el('div','sale-row');
+        var l=document.createElement('div');
+        l.appendChild(el('div','st', new Date(x.ts).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})));
+        l.appendChild(el('div','sd', x.description + (x.category?' · '+x.category:'')));
+        row.appendChild(l);
+        row.appendChild(el('div','sv num', money(x.amount)));
+        card.appendChild(row);
+      });
+      w.appendChild(card);
+    }
+    var fab = el('button','fab','+');
+    fab.onclick = function(){ addingExpense = {description:'', amount:'', category:'Misc'}; render(); };
+    w.appendChild(fab);
+    return w;
+  }
+  function renderExpenseSheet(){
+    var ex = addingExpense;
+    var bd = el('div','sheet-backdrop');
+    bd.onclick = function(e){ if(e.target===bd){ addingExpense=null; render(); } };
+    var sheet = el('div','sheet');
+    sheet.appendChild(el('div','sheet-handle'));
+    sheet.appendChild(el('h3','','Add expense'));
+    var descF = el('div','field'); descF.appendChild(el('label','','What was it for'));
+    var descI = el('input',''); descI.type='text'; descI.placeholder='e.g. Electricity bill'; descI.value=ex.description;
+    descI.oninput=function(e){ex.description=e.target.value;}; descF.appendChild(descI); sheet.appendChild(descF);
+    var amtF = el('div','field'); amtF.appendChild(el('label','','Amount (₹)'));
+    var amtI = el('input',''); amtI.type='number'; amtI.inputMode='decimal'; amtI.placeholder='0'; amtI.value=ex.amount;
+    amtI.oninput=function(e){ex.amount=e.target.value;}; amtF.appendChild(amtI); sheet.appendChild(amtF);
+    var catF = el('div','field'); catF.appendChild(el('label','','Category'));
+    var catS = document.createElement('select');
+    EXPENSE_CATEGORIES.forEach(function(c){ var o=document.createElement('option'); o.value=c; o.textContent=c; if(c===ex.category) o.selected=true; catS.appendChild(o); });
+    catS.onchange=function(e){ex.category=e.target.value;};
+    catF.appendChild(catS); sheet.appendChild(catF);
+    var save = el('button','btn-primary','Save expense');
+    save.onclick = function(){
+      if(!ex.description.trim() || !(Number(ex.amount)>0)) return;
+      addExpense(ex); addingExpense=null; render();
+    };
+    sheet.appendChild(save);
+    var cancel = el('button','btn-secondary','Cancel');
+    cancel.onclick = function(){ addingExpense=null; render(); };
+    sheet.appendChild(cancel);
+    bd.appendChild(sheet);
+    return bd;
+  }
+
+  /* ---- reports ---- */
   function renderReports(){
+    var w = document.createElement('div');
+    var subs = el('div','subtabs');
+    [['sales','Sales'],['purchases','Purchases'],['stock','Stock'],['payments','Payments']].forEach(function(s){
+      var b = el('button','subtab-btn'+(reportsSub===s[0]?' active':''), s[1]);
+      b.onclick = function(id){ return function(){ reportsSub=id; render(); }; }(s[0]);
+      subs.appendChild(b);
+    });
+    w.appendChild(subs);
+    if(reportsSub==='sales') w.appendChild(renderSalesReport());
+    else if(reportsSub==='purchases') w.appendChild(renderPurchasesReport());
+    else if(reportsSub==='stock') w.appendChild(renderStockReport());
+    else w.appendChild(renderPaymentsReport());
+    return w;
+  }
+
+  function renderSalesReport(){
     var w = document.createElement('div');
     var today = todayKey(Date.now());
     var todaySales = state.sales.filter(function(s){ return todayKey(s.ts)===today; });
     var todayTotal = todaySales.reduce(function(sum,s){return sum+s.total;},0);
+    var todayCost = todaySales.reduce(function(sum,s){ return sum + s.items.reduce(function(a,it){return a+(it.costPrice||0)*it.qty;},0); },0);
+    var profit = todayTotal - todayCost;
 
-    var stats = el('div','stat-row');
-    var c1 = el('div','stat-card'); c1.appendChild(el('div','sv num', money(todayTotal))); c1.appendChild(el('div','sl','Today’s sales'));
-    var c2 = el('div','stat-card'); c2.appendChild(el('div','sv num', String(todaySales.length))); c2.appendChild(el('div','sl','Transactions today'));
-    stats.appendChild(c1); stats.appendChild(c2);
+    var stats = el('div','stat-row stat-row3');
+    var c1 = el('div','stat-card'); c1.appendChild(el('div','sv num', money(todayTotal))); c1.appendChild(el('div','sl','Sales'));
+    var c2 = el('div','stat-card'); c2.appendChild(el('div','sv num', String(todaySales.length))); c2.appendChild(el('div','sl','Bills'));
+    var c3 = el('div','stat-card'); c3.appendChild(el('div','sv num', money(profit))); c3.appendChild(el('div','sl','Profit (est.)'));
+    stats.appendChild(c1); stats.appendChild(c2); stats.appendChild(c3);
     w.appendChild(stats);
 
     w.appendChild(el('div','section-label','Last 7 days'));
@@ -556,8 +835,8 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
       todaySales.slice().reverse().forEach(function(s){
         var row = el('div','sale-row');
         var l = document.createElement('div');
-        l.appendChild(el('div','st', new Date(s.ts).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})));
-        l.appendChild(el('div','sd', s.items.map(function(it){return it.name+' ×'+it.qty;}).join(', ')));
+        l.appendChild(el('div','st', new Date(s.ts).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) + ' · ' + (s.paymentMethod||'Cash')));
+        l.appendChild(el('div','sd', s.items.map(function(it){return it.name+' ×'+it.qty;}).join(', ') + (s.customerName?(' — '+s.customerName):'')));
         row.appendChild(l);
         row.appendChild(el('div','sv num', money(s.total)));
         card.appendChild(row);
@@ -567,6 +846,98 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     return w;
   }
 
+  function renderPurchasesReport(){
+    var w = document.createElement('div');
+    var today = todayKey(Date.now());
+    var todayP = state.purchases.filter(function(x){return todayKey(x.ts)===today;});
+    var total = todayP.reduce(function(s,x){return s+x.total;},0);
+    var stats = el('div','stat-row');
+    var c1=el('div','stat-card'); c1.appendChild(el('div','sv num',money(total))); c1.appendChild(el('div','sl','Spent today'));
+    var c2=el('div','stat-card'); c2.appendChild(el('div','sv num',String(todayP.length))); c2.appendChild(el('div','sl','Stock-ins today'));
+    stats.appendChild(c1); stats.appendChild(c2); w.appendChild(stats);
+    w.appendChild(el('div','section-label','Today’s stock received'));
+    if(!todayP.length){ w.appendChild(el('div','empty','No stock recorded today.')); }
+    else{
+      var card=el('div','card'); card.style.padding='2px 12px';
+      todayP.slice().reverse().forEach(function(x){
+        var row=el('div','sale-row');
+        var l=document.createElement('div');
+        l.appendChild(el('div','st', new Date(x.ts).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})));
+        l.appendChild(el('div','sd', x.productName + ' ×' + x.qty + ' @ ' + money(x.costPrice)));
+        row.appendChild(l);
+        row.appendChild(el('div','sv num', money(x.total)));
+        card.appendChild(row);
+      });
+      w.appendChild(card);
+    }
+    return w;
+  }
+
+  function renderStockReport(){
+    var w = document.createElement('div');
+    var totalUnits = state.products.reduce(function(s,p){return s+(p.stock||0);},0);
+    var costValue = state.products.reduce(function(s,p){return s+(p.stock||0)*(p.costPrice||0);},0);
+    var saleValue = state.products.reduce(function(s,p){return s+(p.stock||0)*(p.price||0);},0);
+    var stats = el('div','stat-row stat-row3');
+    var c1=el('div','stat-card'); c1.appendChild(el('div','sv num',String(totalUnits))); c1.appendChild(el('div','sl','Units in stock'));
+    var c2=el('div','stat-card'); c2.appendChild(el('div','sv num',money(costValue))); c2.appendChild(el('div','sl','Value at cost'));
+    var c3=el('div','stat-card'); c3.appendChild(el('div','sv num',money(saleValue))); c3.appendChild(el('div','sl','Value at sale price'));
+    stats.appendChild(c1); stats.appendChild(c2); stats.appendChild(c3); w.appendChild(stats);
+
+    var lowT = state.lowStockThreshold||5;
+    var low = state.products.filter(function(p){return p.stock<=lowT;}).sort(function(a,b){return a.stock-b.stock;});
+    w.appendChild(el('div','section-label','Low / out of stock'));
+    if(!low.length){ w.appendChild(el('div','empty','Everything is well stocked.')); }
+    else{
+      var card=el('div','card'); card.style.padding='2px 12px';
+      low.forEach(function(p){
+        var row=el('div','inv-row');
+        var mid=document.createElement('div'); mid.style.flex='1';
+        mid.appendChild(el('div','iname',p.name));
+        row.appendChild(mid);
+        var cls = p.stock<=0?'out':'low';
+        row.appendChild(el('span','stock-pill '+cls, p.stock<=0?'Out':p.stock+' left'));
+        card.appendChild(row);
+      });
+      w.appendChild(card);
+    }
+    return w;
+  }
+
+  function renderPaymentsReport(){
+    var w = document.createElement('div');
+    var today = todayKey(Date.now());
+    var todaySales = state.sales.filter(function(s){return todayKey(s.ts)===today;});
+    var byMethod = {};
+    PAYMENT_METHODS.forEach(function(m){byMethod[m]=0;});
+    todaySales.forEach(function(s){ var m = s.paymentMethod||'Cash'; if(byMethod[m]===undefined) byMethod[m]=0; byMethod[m]+=s.total; });
+    var total = todaySales.reduce(function(s,x){return s+x.total;},0);
+    var max = Math.max.apply(null, Object.keys(byMethod).map(function(k){return byMethod[k];}).concat([1]));
+
+    w.appendChild(el('div','section-label',"Today's takings by payment method"));
+    var card = el('div','card'); card.style.padding='14px';
+    Object.keys(byMethod).forEach(function(m){
+      var row = document.createElement('div'); row.style.marginBottom='12px';
+      var top = document.createElement('div'); top.style.display='flex'; top.style.justifyContent='space-between'; top.style.fontSize='13px'; top.style.marginBottom='5px';
+      top.appendChild(el('span','',m));
+      top.appendChild(el('span','num', money(byMethod[m])));
+      row.appendChild(top);
+      var track = document.createElement('div'); track.style.height='8px'; track.style.borderRadius='4px'; track.style.background='var(--surface-2)'; track.style.overflow='hidden';
+      var fill = document.createElement('div'); fill.style.height='100%'; fill.style.borderRadius='4px'; fill.style.background='var(--accent)'; fill.style.width = Math.round((byMethod[m]/max)*100) + '%';
+      track.appendChild(fill); row.appendChild(track);
+      card.appendChild(row);
+    });
+    w.appendChild(card);
+
+    var stats = el('div','stat-row');
+    var c1=el('div','stat-card'); c1.appendChild(el('div','sv num',money(total))); c1.appendChild(el('div','sl','Total collected today'));
+    var c2=el('div','stat-card'); c2.appendChild(el('div','sv num',String(todaySales.length))); c2.appendChild(el('div','sl','Transactions'));
+    stats.appendChild(c1); stats.appendChild(c2);
+    w.appendChild(stats);
+    return w;
+  }
+
+  /* ---- settings ---- */
   function renderSettings(){
     var w = document.createElement('div');
     w.appendChild(el('div','section-label','Sync'));
@@ -579,10 +950,10 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     w.appendChild(el('div','section-label','Store'));
     var card1 = el('div','card'); card1.style.padding='2px 14px';
     var r1 = el('div','settings-row');
-    var l1 = document.createElement('div'); l1.appendChild(el('div','sl2','Store name')); l1.appendChild(el('div','sd2', state.storeName||'My Store'));
+    var l1 = document.createElement('div'); l1.appendChild(el('div','sl2','Store name')); l1.appendChild(el('div','sd2', state.storeName||'Vedlakshana Store'));
     r1.appendChild(l1);
     var e1 = el('button','link-btn','Edit');
-    e1.onclick = function(){ var name = prompt('Store name', state.storeName||'My Store'); if(name!==null) setStoreName(name.trim()); };
+    e1.onclick = function(){ var name = prompt('Store name', state.storeName||'Vedlakshana Store'); if(name!==null) setStoreName(name.trim()); };
     r1.appendChild(e1); card1.appendChild(r1);
     w.appendChild(card1);
 

@@ -7,8 +7,10 @@ Sheet as its database. Three parts to set up, in this order:
 
 1. Go to [sheets.google.com](https://sheets.google.com) and create a new blank
    spreadsheet. Name it e.g. "Till Data".
-2. Create three tabs (bottom-left `+`), named **exactly**: `Settings`,
-   `Products`, `Sales`. (Delete the default `Sheet1` once these exist.)
+2. Create five tabs (bottom-left `+`), named **exactly**: `Settings`,
+   `Products`, `Sales`, `Purchases`, `Expenses`. (Delete the default
+   `Sheet1` once these exist — the app also creates any missing tab
+   automatically the first time it runs, so this step is a safety net.)
 3. Menu: **Extensions → Apps Script**. Delete the placeholder code and paste
    in the contents of `Code.gs` from this folder.
 4. In that pasted code, change this line to your own secret string (anything,
@@ -92,3 +94,18 @@ git add -A && git commit -m "Update app" && git push
   Chrome show a proper **"Install app"** prompt on Android instead of just a
   generic bookmark — that should fix the "can't find Add to Home Screen"
   issue directly, once this is served over HTTPS.
+- If you already had a Google Sheet set up before the Purchases/Expenses/
+  cost-price features were added: no action needed. The app creates any
+  missing tab automatically the first time it talks to your sheet, and
+  `Code.gs` rewrites the `Products`/`Sales` column headers to include the
+  new fields the next time it saves.
+- Sharing a bill to WhatsApp uses your phone's normal "Share" sheet (via
+  the Web Share API) so the PDF goes across as a real attachment — this
+  only works over HTTPS (which GitHub Pages already gives you) and on
+  browsers that support file sharing (recent Chrome on Android does). If
+  it's not available, the app falls back to downloading the PDF so you can
+  attach it manually.
+- Whenever you edit `Code.gs` itself (not just the Google Sheet's data),
+  remember it needs a fresh **Deploy → Manage deployments → pencil icon →
+  Version: "New version" → Deploy** — just saving the script does not
+  update the live Web App URL.
