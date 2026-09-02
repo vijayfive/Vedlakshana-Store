@@ -1,0 +1,18 @@
+# Caddyfile — put this on your VPS at /etc/caddy/Caddyfile
+# Caddy gets you free automatic HTTPS (required for "Add to Home Screen" /
+# Install app to show up on Android) with zero extra setup.
+#
+# Replace till.yourdomain.com with your real domain/subdomain, pointed at
+# your VPS's IP address via an A record first.
+
+till.yourdomain.com {
+    root * /var/www/till
+    file_server
+    encode gzip
+
+    header {
+        # Basic security headers; harmless for a small internal tool.
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "same-origin"
+    }
+}
