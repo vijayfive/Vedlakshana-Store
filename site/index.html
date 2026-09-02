@@ -6,8 +6,9 @@
 <title>Vedlakshana Store</title>
 <meta name="theme-color" content="#633532">
 <link rel="manifest" href="./manifest.json">
-<link rel="icon" href="./icon-192.png">
-<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Vedlakshana Store">
@@ -56,7 +57,8 @@
   @media (prefers-reduced-motion:reduce){ *{animation-duration:.001ms!important; transition-duration:.001ms!important;} }
 
   .lock-screen{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:28px; padding:32px 24px; text-align:center;}
-  .lock-mark{width:64px; height:64px; border-radius:18px; background:var(--accent-soft); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:28px;}
+  .lock-mark{width:72px; height:72px; border-radius:20px; background:var(--accent2); overflow:hidden; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow);}
+  .lock-mark img{width:100%; height:100%; object-fit:cover;}
   .lock-title{font-size:22px; font-weight:600;}
   .lock-sub{color:var(--ink-muted); font-size:14px; margin-top:4px;}
   .pin-dots{display:flex; gap:14px; margin:6px 0;}
@@ -98,7 +100,7 @@
   .cart-bar{position:sticky; bottom:64px; margin:12px -16px 0; padding:12px 16px; background:var(--accent); color:var(--accent-ink); display:flex; align-items:center; justify-content:space-between; border-radius:14px 14px 0 0; box-shadow:0 -4px 14px rgba(0,0,0,.12);}
   .cart-bar .ct-info{font-size:13px; opacity:.92;}
   .cart-bar .ct-total{font-size:17px; font-weight:700;}
-  .cart-bar button{background:rgba(255,255,255,.18); color:var(--accent-ink); border:none; padding:9px 16px; border-radius:10px; font-weight:600; font-size:13px;}
+  .cart-bar button{background:var(--accent2); color:var(--accent2-ink); border:none; padding:9px 16px; border-radius:10px; font-weight:600; font-size:13px;}
 
   .sheet-backdrop{position:fixed; inset:0; background:rgba(20,18,14,.45); z-index:40; display:flex; align-items:flex-end; justify-content:center;}
   .sheet{width:100%; max-width:560px; background:var(--surface); border-radius:20px 20px 0 0; padding:18px 18px calc(18px + env(safe-area-inset-bottom)); max-height:86vh; overflow-y:auto;}
@@ -114,7 +116,7 @@
   .cart-line-total{width:64px; text-align:right; font-size:13.5px; font-weight:600;}
   .sheet-total-row{display:flex; justify-content:space-between; align-items:baseline; padding:14px 0 4px; font-size:15px; font-weight:600;}
   .sheet-total-row .num{font-size:19px;}
-  .btn-primary{width:100%; background:var(--accent); color:var(--accent-ink); border:none; padding:14px; border-radius:12px; font-size:15px; font-weight:600; margin-top:10px;}
+  .btn-primary{width:100%; background:var(--accent2); color:var(--accent2-ink); border:none; padding:14px; border-radius:12px; font-size:15px; font-weight:600; margin-top:10px;}
   .btn-primary:disabled{opacity:.5;}
   .btn-secondary{width:100%; background:var(--surface-2); color:var(--ink); border:1px solid var(--border); padding:12px; border-radius:12px; font-size:14px; font-weight:500; margin-top:8px;}
   .btn-danger-text{width:100%; background:none; border:none; color:var(--danger); font-size:13px; padding:10px; margin-top:2px;}
@@ -128,7 +130,7 @@
   .stock-pill.low{background:var(--warning-soft); color:var(--warning);}
   .stock-pill.out{background:var(--danger-soft); color:var(--danger);}
   .restock-btn{background:var(--accent-soft); color:var(--accent); border:none; font-size:11px; font-weight:700; padding:6px 9px; border-radius:8px; white-space:nowrap;}
-  .fab{position:fixed; right:calc(50% - 280px + 18px); bottom:80px; width:52px; height:52px; border-radius:50%; background:var(--accent); color:var(--accent-ink); border:none; font-size:24px; box-shadow:var(--shadow); z-index:8;}
+  .fab{position:fixed; right:calc(50% - 280px + 18px); bottom:80px; width:52px; height:52px; border-radius:50%; background:var(--accent2); color:var(--accent2-ink); border:none; font-size:24px; box-shadow:var(--shadow); z-index:8;}
   @media (max-width:559px){ .fab{right:18px;} }
   .field{margin-top:14px;}
   .field label{display:block; font-size:12px; font-weight:600; color:var(--ink-muted); margin-bottom:6px;}
@@ -420,7 +422,10 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
 
   function renderLock(){
     var w = el('div','lock-screen');
-    w.appendChild(el('div','lock-mark','🧾'));
+    var mark = el('div','lock-mark');
+    var markImg = document.createElement('img'); markImg.src='./icon-192.png'; markImg.alt='Vedlakshana';
+    mark.appendChild(markImg);
+    w.appendChild(mark);
     if(configured && !stateLoaded){
       w.appendChild(el('div','lock-title','Loading store…'));
       w.appendChild(el('div','lock-sub','Fetching your store details'));

@@ -1,8 +1,8 @@
 // Till — minimal offline app-shell cache.
 // Static files are cached so the app opens instantly and works offline;
 // data calls to the Google Apps Script backend always go to the network.
-const CACHE = 'till-shell-v1';
-const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+const CACHE = 'till-shell-v2';
+const SHELL = ['./', './index.html', './manifest.json', './favicon-32.png', './icon-180.png', './icon-192.png', './icon-512.png', './icon-192-maskable.png', './icon-512-maskable.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
