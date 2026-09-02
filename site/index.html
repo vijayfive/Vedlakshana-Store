@@ -231,6 +231,60 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   var toastTimer = null;
   var saving = false;
   var stateLoaded = !configured;
+  var bioPlatformAvailable = false;
+  var bioBusy = false;
+  var bioAutoTried = false;
+
+  /* ---------- fingerprint / face unlock (WebAuthn, device-local) ---------- */
+  var BIO_KEY = 'vlk_bio_cred_id';
+  function bioCredId(){ try{ return localStorage.getItem(BIO_KEY); }catch(e){ return null; } }
+  function bufToB64(buf){ var bytes = new Uint8Array(buf), s=''; for(var i=0;i<bytes.length;i++) s+=String.fromCharCode(bytes[i]); return btoa(s); }
+  function b64ToBuf(b64){ var bin = atob(b64), bytes = new Uint8Array(bin.length); for(var i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i); return bytes.buffer; }
+  if(window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable){
+    PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(function(v){ bioPlatformAvailable = !!v; render(); }).catch(function(){});
+  }
+  function setupFingerprint(){
+    if(!bioPlatformAvailable){ alert('Fingerprint / face unlock isn\'t available on this device or browser.'); return; }
+    navigator.credentials.create({
+      publicKey:{
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rp:{ name: state.storeName || 'Vedlakshana Store' },
+        user:{ id: crypto.getRandomValues(new Uint8Array(16)), name:'owner', displayName: state.storeName || 'Vedlakshana Store' },
+        pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+        authenticatorSelection:{ authenticatorAttachment:'platform', userVerification:'required' },
+        timeout:60000,
+        attestation:'none'
+      }
+    }).then(function(cred){
+      try{ localStorage.setItem(BIO_KEY, bufToB64(cred.rawId)); }catch(e){}
+      showToast('Fingerprint unlock set up on this device');
+      render();
+    }).catch(function(err){
+      alert('Could not set up fingerprint unlock: ' + (err && err.message ? err.message : 'cancelled'));
+    });
+  }
+  function removeFingerprint(){
+    try{ localStorage.removeItem(BIO_KEY); }catch(e){}
+    showToast('Fingerprint unlock removed from this device');
+    render();
+  }
+  function tryBioUnlock(){
+    var credId = bioCredId();
+    if(!credId || bioBusy) return;
+    bioBusy = true; render();
+    navigator.credentials.get({
+      publicKey:{
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        allowCredentials:[{ id: b64ToBuf(credId), type:'public-key' }],
+        userVerification:'required',
+        timeout:60000
+      }
+    }).then(function(){
+      bioBusy=false; unlocked=true; pinBuffer=''; pinError=false; render();
+    }).catch(function(){
+      bioBusy=false; render();
+    });
+  }
 
   function todayKey(ts){ var d = new Date(ts); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
   var REPORT_RANGES = [['1d','Today'],['7d','7 Days'],['30d','1 Month'],['90d','Quarter'],['custom','Custom']];
@@ -456,7 +510,17 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
       return w;
     }
     w.appendChild(el('div','lock-title', state.storeName || 'Vedlakshana Store'));
-    w.appendChild(el('div','lock-sub', configured ? 'Enter your 4-digit PIN' : 'Enter your 4-digit PIN — backend not configured yet, changes won\'t be saved'));
+    var credId = bioCredId();
+    if(credId){
+      w.appendChild(el('div','lock-sub', bioBusy ? 'Waiting for fingerprint…' : 'Use your fingerprint, or enter your PIN below'));
+      var bioBtn = el('button','btn-secondary', bioBusy ? 'Waiting…' : '👆 Unlock with fingerprint');
+      bioBtn.style.maxWidth='260px'; bioBtn.disabled = bioBusy;
+      bioBtn.onclick = tryBioUnlock;
+      w.appendChild(bioBtn);
+      if(!bioAutoTried){ bioAutoTried = true; setTimeout(tryBioUnlock, 350); }
+    } else {
+      w.appendChild(el('div','lock-sub', configured ? 'Enter your 4-digit PIN' : 'Enter your 4-digit PIN — backend not configured yet, changes won\'t be saved'));
+    }
     var dots = el('div','pin-dots');
     for(var i=0;i<4;i++) dots.appendChild(el('div','pin-dot'+(i<pinBuffer.length?(pinError?' err':' filled'):'')));
     w.appendChild(dots);
@@ -1021,8 +1085,19 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     l2 = document.createElement('div'); l2.appendChild(el('div','sl2','Lock app')); l2.appendChild(el('div','sd2','Return to PIN screen'));
     r2b.appendChild(l2);
     var e2b = el('button','link-btn','Lock now');
-    e2b.onclick = function(){ unlocked=false; tab='bill'; render(); };
+    e2b.onclick = function(){ unlocked=false; bioAutoTried=false; tab='bill'; render(); };
     r2b.appendChild(e2b); card2.appendChild(r2b);
+    var r2c = el('div','settings-row');
+    var l2c = document.createElement('div'); l2c.appendChild(el('div','sl2','Fingerprint unlock'));
+    var credId2 = bioCredId();
+    l2c.appendChild(el('div','sd2', !bioPlatformAvailable ? 'Not available on this device/browser' : credId2 ? 'Enabled on this device' : 'Skip the PIN using your phone\'s fingerprint/face unlock'));
+    r2c.appendChild(l2c);
+    if(bioPlatformAvailable){
+      var e2c = el('button','link-btn', credId2 ? 'Remove' : 'Set up');
+      e2c.onclick = credId2 ? removeFingerprint : setupFingerprint;
+      r2c.appendChild(e2c);
+    }
+    card2.appendChild(r2c);
     w.appendChild(card2);
 
     w.appendChild(el('div','section-label','Stock alerts'));
