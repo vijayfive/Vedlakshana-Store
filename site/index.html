@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Vedlakshana Store</title>
-<meta name="theme-color" content="#0F6E63">
+<meta name="theme-color" content="#633532">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
@@ -14,33 +14,36 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
   :root{
-    --bg:#FAF7F2; --surface:#FFFFFF; --surface-2:#F1ECE3; --surface-3:#E9E1D2;
-    --ink:#23262B; --ink-muted:#6B6459; --ink-faint:#95897A;
-    --accent:#0F6E63; --accent-ink:#FFFFFF; --accent-soft:#E4EFEC;
+    --bg:#FAF6ED; --surface:#FFFFFF; --surface-2:#F4EAD3; --surface-3:#EDDDB8;
+    --ink:#2A211F; --ink-muted:#6B5D52; --ink-faint:#9A8A76;
+    --accent:#633532; --accent-ink:#FFFFFF; --accent-soft:#F4E19B;
+    --accent2:#FE730C; --accent2-ink:#2A1204;
     --success:#3F8F5F; --success-soft:#E4F1E8;
     --warning:#B4720F; --warning-soft:#FBEDD8;
     --danger:#B4382C; --danger-soft:#F8E4E1;
-    --border:#E4DDD0; --shadow:0 1px 2px rgba(35,38,43,.06),0 4px 12px rgba(35,38,43,.05);
+    --border:#E9DEC3; --shadow:0 1px 2px rgba(42,33,31,.07),0 4px 12px rgba(42,33,31,.06);
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
-      --bg:#17181A; --surface:#1E2023; --surface-2:#26282C; --surface-3:#2F3236;
-      --ink:#F1EDE6; --ink-muted:#A9A296; --ink-faint:#726A5D;
-      --accent:#3FBCA8; --accent-ink:#08201D; --accent-soft:#1D3733;
+      --bg:#1B1614; --surface:#241C19; --surface-2:#2E2420; --surface-3:#392C26;
+      --ink:#F3E9DE; --ink-muted:#B8A492; --ink-faint:#82705F;
+      --accent:#E0956F; --accent-ink:#241310; --accent-soft:#3D2C1E;
+      --accent2:#FE8A3C; --accent2-ink:#2A1204;
       --success:#5FBE84; --success-soft:#1E3327;
       --warning:#E3A24C; --warning-soft:#3A2C15;
       --danger:#E2685A; --danger-soft:#3A211E;
-      --border:#34363A; --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 16px rgba(0,0,0,.3);
+      --border:#3E332C; --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 16px rgba(0,0,0,.3);
     }
   }
   :root[data-theme="dark"]{
-    --bg:#17181A; --surface:#1E2023; --surface-2:#26282C; --surface-3:#2F3236;
-    --ink:#F1EDE6; --ink-muted:#A9A296; --ink-faint:#726A5D;
-    --accent:#3FBCA8; --accent-ink:#08201D; --accent-soft:#1D3733;
+    --bg:#1B1614; --surface:#241C19; --surface-2:#2E2420; --surface-3:#392C26;
+    --ink:#F3E9DE; --ink-muted:#B8A492; --ink-faint:#82705F;
+    --accent:#E0956F; --accent-ink:#241310; --accent-soft:#3D2C1E;
+    --accent2:#FE8A3C; --accent2-ink:#2A1204;
     --success:#5FBE84; --success-soft:#1E3327;
     --warning:#E3A24C; --warning-soft:#3A2C15;
     --danger:#E2685A; --danger-soft:#3A211E;
-    --border:#34363A; --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 16px rgba(0,0,0,.3);
+    --border:#3E332C; --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 16px rgba(0,0,0,.3);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
@@ -90,7 +93,7 @@
   .product-tile .pstock.low{color:var(--warning);}
   .product-tile .pstock.out{color:var(--danger);}
   .product-tile.disabled{opacity:.45; pointer-events:none;}
-  .qty-badge{position:absolute; top:8px; right:8px; background:var(--accent); color:var(--accent-ink); font-size:11px; font-weight:700; min-width:20px; height:20px; border-radius:10px; display:flex; align-items:center; justify-content:center; padding:0 5px;}
+  .qty-badge{position:absolute; top:8px; right:8px; background:var(--accent2); color:var(--accent2-ink); font-size:11px; font-weight:700; min-width:20px; height:20px; border-radius:10px; display:flex; align-items:center; justify-content:center; padding:0 5px;}
 
   .cart-bar{position:sticky; bottom:64px; margin:12px -16px 0; padding:12px 16px; background:var(--accent); color:var(--accent-ink); display:flex; align-items:center; justify-content:space-between; border-radius:14px 14px 0 0; box-shadow:0 -4px 14px rgba(0,0,0,.12);}
   .cart-bar .ct-info{font-size:13px; opacity:.92;}
@@ -193,18 +196,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     storeName: 'Vedlakshana Store',
     pin: '1234',
     lowStockThreshold: 5,
-    products: [
-      {id:'p1',name:'Tea Packet 250g',price:90,costPrice:65,stock:18},
-      {id:'p2',name:'Rice 1kg',price:65,costPrice:52,stock:30},
-      {id:'p3',name:'Sugar 1kg',price:48,costPrice:40,stock:22},
-      {id:'p4',name:'Milk 500ml',price:30,costPrice:26,stock:12},
-      {id:'p5',name:'Cooking Oil 1L',price:150,costPrice:128,stock:9},
-      {id:'p6',name:'Bread',price:40,costPrice:32,stock:4},
-      {id:'p7',name:'Biscuit Pack',price:20,costPrice:15,stock:40},
-      {id:'p8',name:'Soap Bar',price:35,costPrice:26,stock:25},
-      {id:'p9',name:'Detergent 1kg',price:110,costPrice:88,stock:3},
-      {id:'p10',name:'Salt 1kg',price:22,costPrice:16,stock:28}
-    ],
+    products: [],
     sales: [],
     purchases: [],
     expenses: []
@@ -223,14 +215,16 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   var editingProduct = null;
   var restockProduct = null;
   var addingExpense = null;
-  var receiptSale = null;
+  var lastSale = null;
   var reportsSub = 'sales';
   var cartCustomerName = '';
   var cartCustomerPhone = '';
   var cartPayment = 'Cash';
   var toastMsg = '';
+  var toastAction = null;
   var toastTimer = null;
   var saving = false;
+  var stateLoaded = !configured;
 
   function todayKey(ts){ var d = new Date(ts); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
   function money(n){ return '₹' + Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2}); }
@@ -249,9 +243,10 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
           state = data;
         }
         syncStatus = 'ok';
+        stateLoaded = true;
         render();
       })
-      .catch(function(){ syncStatus = 'bad'; render(); });
+      .catch(function(){ syncStatus = 'bad'; stateLoaded = true; render(); });
   }
 
   function persist(){
@@ -273,10 +268,10 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
       .catch(function(){ saving = false; syncStatus = 'bad'; render(); });
   }
 
-  function showToast(msg){
-    toastMsg = msg; render();
+  function showToast(msg, action){
+    toastMsg = msg; toastAction = action || null; render();
     if(toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(function(){ toastMsg=''; render(); }, 2200);
+    toastTimer = setTimeout(function(){ toastMsg=''; toastAction=null; render(); }, action ? 4500 : 2200);
   }
 
   /* ---------- mutations: products ---------- */
@@ -329,8 +324,9 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     cart = {};
     sheetOpen = false;
     cartCustomerName = ''; cartCustomerPhone = ''; cartPayment = 'Cash';
-    receiptSale = sale;
+    lastSale = sale;
     persist();
+    showToast('Sale completed — ' + money(sale.total), {label:'Share bill', fn:function(){ sharePdfBill(sale); }});
   }
 
   /* ---------- mutations: expenses ---------- */
@@ -408,14 +404,28 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     if(editingProduct!==null) root.appendChild(renderProductSheet());
     if(restockProduct!==null) root.appendChild(renderRestockSheet());
     if(addingExpense!==null) root.appendChild(renderExpenseSheet());
-    if(receiptSale!==null) root.appendChild(renderReceiptSheet());
-    if(toastMsg){ var t=document.createElement('div'); t.className='toast'; t.textContent=toastMsg; root.appendChild(t); }
+    if(toastMsg){
+      var t=document.createElement('div'); t.className='toast';
+      var tt=document.createElement('span'); tt.textContent=toastMsg; t.appendChild(tt);
+      if(toastAction){
+        var ab=document.createElement('button'); ab.textContent=toastAction.label;
+        ab.style.marginLeft='10px'; ab.style.background='rgba(255,255,255,.2)'; ab.style.border='none'; ab.style.color='inherit'; ab.style.padding='4px 10px'; ab.style.borderRadius='8px'; ab.style.fontSize='12px'; ab.style.fontWeight='600';
+        ab.onclick = function(){ var fn=toastAction.fn; toastMsg=''; toastAction=null; if(toastTimer) clearTimeout(toastTimer); render(); if(fn) fn(); };
+        t.appendChild(ab);
+      }
+      root.appendChild(t);
+    }
   }
   function el(tag, cls, txt){ var e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
 
   function renderLock(){
     var w = el('div','lock-screen');
     w.appendChild(el('div','lock-mark','🧾'));
+    if(configured && !stateLoaded){
+      w.appendChild(el('div','lock-title','Loading store…'));
+      w.appendChild(el('div','lock-sub','Fetching your store details'));
+      return w;
+    }
     w.appendChild(el('div','lock-title', state.storeName || 'Vedlakshana Store'));
     w.appendChild(el('div','lock-sub', configured ? 'Enter your 4-digit PIN' : 'Enter your 4-digit PIN — backend not configured yet, changes won\'t be saved'));
     var dots = el('div','pin-dots');
@@ -577,40 +587,6 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     var close = el('button','btn-secondary','Keep shopping');
     close.onclick = function(){ sheetOpen=false; render(); };
     sheet.appendChild(close);
-    bd.appendChild(sheet);
-    return bd;
-  }
-
-  function renderReceiptSheet(){
-    var sale = receiptSale;
-    var bd = el('div','sheet-backdrop');
-    bd.onclick = function(e){ if(e.target===bd){ receiptSale=null; render(); } };
-    var sheet = el('div','sheet');
-    sheet.appendChild(el('div','sheet-handle'));
-    sheet.appendChild(el('h3','','Sale complete'));
-    sheet.appendChild(el('div','small-note', new Date(sale.ts).toLocaleString('en-IN')));
-    var card = el('div','card'); card.style.padding='2px 12px'; card.style.marginTop='12px';
-    sale.items.forEach(function(it){
-      var row = el('div','receipt-item');
-      row.appendChild(el('span','', it.name + ' ×' + it.qty));
-      row.appendChild(el('span','num', money(it.price*it.qty)));
-      card.appendChild(row);
-    });
-    sheet.appendChild(card);
-    var tr = el('div','sheet-total-row');
-    tr.appendChild(el('span','','Total'));
-    tr.appendChild(el('span','num', money(sale.total)));
-    sheet.appendChild(tr);
-    if(sale.customerName || sale.customerPhone){
-      sheet.appendChild(el('div','small-note', 'Customer: ' + [sale.customerName, sale.customerPhone].filter(Boolean).join(' · ')));
-    }
-    sheet.appendChild(el('div','small-note', 'Paid via ' + sale.paymentMethod));
-    var share = el('button','btn-primary','Share bill (PDF)');
-    share.onclick = function(){ sharePdfBill(sale); };
-    sheet.appendChild(share);
-    var done = el('button','btn-secondary','Done');
-    done.onclick = function(){ receiptSale=null; render(); };
-    sheet.appendChild(done);
     bd.appendChild(sheet);
     return bd;
   }
@@ -838,7 +814,13 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
         l.appendChild(el('div','st', new Date(s.ts).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) + ' · ' + (s.paymentMethod||'Cash')));
         l.appendChild(el('div','sd', s.items.map(function(it){return it.name+' ×'+it.qty;}).join(', ') + (s.customerName?(' — '+s.customerName):'')));
         row.appendChild(l);
-        row.appendChild(el('div','sv num', money(s.total)));
+        var right = document.createElement('div'); right.style.textAlign='right'; right.style.display='flex'; right.style.flexDirection='column'; right.style.alignItems='flex-end'; right.style.gap='4px';
+        right.appendChild(el('div','sv num', money(s.total)));
+        var shareBtn = el('button','link-btn','Share');
+        shareBtn.style.fontSize='11.5px'; shareBtn.style.padding='0';
+        shareBtn.onclick = function(sale){ return function(){ sharePdfBill(sale); }; }(s);
+        right.appendChild(shareBtn);
+        row.appendChild(right);
         card.appendChild(row);
       });
       w.appendChild(card);
@@ -885,18 +867,21 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     stats.appendChild(c1); stats.appendChild(c2); stats.appendChild(c3); w.appendChild(stats);
 
     var lowT = state.lowStockThreshold||5;
-    var low = state.products.filter(function(p){return p.stock<=lowT;}).sort(function(a,b){return a.stock-b.stock;});
-    w.appendChild(el('div','section-label','Low / out of stock'));
-    if(!low.length){ w.appendChild(el('div','empty','Everything is well stocked.')); }
+    var lowCount = state.products.filter(function(p){return p.stock<=lowT;}).length;
+
+    w.appendChild(el('div','section-label', 'Product-wise stock' + (lowCount ? ' — ' + lowCount + ' low/out' : '')));
+    if(!state.products.length){ w.appendChild(el('div','empty','No products yet. Add some from the Stock tab.')); }
     else{
+      var all = state.products.slice().sort(function(a,b){ return a.name.localeCompare(b.name); });
       var card=el('div','card'); card.style.padding='2px 12px';
-      low.forEach(function(p){
+      all.forEach(function(p){
         var row=el('div','inv-row');
         var mid=document.createElement('div'); mid.style.flex='1';
         mid.appendChild(el('div','iname',p.name));
         row.appendChild(mid);
-        var cls = p.stock<=0?'out':'low';
-        row.appendChild(el('span','stock-pill '+cls, p.stock<=0?'Out':p.stock+' left'));
+        var cls = p.stock<=0?'out':(p.stock<=lowT?'low':'ok');
+        var label = p.stock<=0 ? 'Out' : (p.stock + ' qty');
+        row.appendChild(el('span','stock-pill '+cls, label));
         card.appendChild(row);
       });
       w.appendChild(card);
