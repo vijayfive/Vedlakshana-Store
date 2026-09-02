@@ -36,56 +36,49 @@ var WRITE_TOKEN = 'change-this-to-your-own-secret';
 Paste in the URL from step 1.6, and use the **same** token you set in
 `Code.gs`. Save the file.
 
-## 3. Host it on your VPS
+## 3. Host it on GitHub Pages (free, no VPS needed)
 
-You'll need a domain or subdomain (e.g. `till.yourdomain.com`) pointed at
-your VPS's IP address (an A record in your DNS).
+The app's runtime files live in the `site/` folder — that's the only part
+that gets published; `Code.gs`, `Caddyfile`, and this guide stay out of the
+public site.
 
-**Simplest option — Caddy** (free automatic HTTPS in one command; HTTPS is
-required for "Add to Home Screen" to work on Android):
+1. On GitHub, create a **new repository** (public — GitHub Pages needs a
+   paid plan to publish from a private repo on most personal accounts).
+2. Push this folder to it:
+   ```bash
+   git remote add origin https://github.com/YOUR-USERNAME/YOUR-REPO.git
+   git branch -M main
+   git add -A
+   git commit -m "Set up Vedlakshana Store"
+   git push -u origin main
+   ```
+3. In that repo: **Settings → Pages → Source → "GitHub Actions"**. That's
+   it — the included workflow (`.github/workflows/deploy.yml`) takes it from
+   there.
+4. Wait ~1 minute, then check **Actions** tab for a green checkmark. Your
+   app is now live at:
+   `https://YOUR-USERNAME.github.io/YOUR-REPO/`
+   (GitHub Pages provides free HTTPS automatically — required for "Add to
+   Home Screen"/"Install app" to show up on Android.)
 
-```bash
-# on the VPS, if Caddy isn't installed yet:
-sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
-sudo apt update && sudo apt install caddy
+Want a nicer URL instead of `github.io/YOUR-REPO`? Add a custom domain/
+subdomain under **Settings → Pages → Custom domain** (point a CNAME record
+at `YOUR-USERNAME.github.io`), or leave it as-is — it works fine either way.
 
-sudo mkdir -p /var/www/till
-# copy Caddyfile (from this folder) to /etc/caddy/Caddyfile, editing the domain
-sudo systemctl reload caddy
-```
-
-Then copy the app files up once, to get it live immediately:
-
-```bash
-rsync -avz --exclude '.github' --exclude 'Code.gs' --exclude 'SETUP.md' \
-  ./ your-user@your-vps-ip:/var/www/till/
-```
-
-Visit `https://till.yourdomain.com` — you should see the PIN screen.
-
-Already run Nginx on that VPS instead? Same idea: point a server block's
-`root` at `/var/www/till`, serve `index.html` as the default doc, and use
-`certbot --nginx` for the free HTTPS certificate.
+Prefer your own VPS instead? `Caddyfile` in this folder still works for
+that: point it at `site/` as the root and serve it with Caddy or Nginx —
+ask me and I'll walk through it.
 
 ## 4. Automatic re-deploys for future changes
 
-Since there's no build step, "deploying" is just copying files — the
-included GitHub Actions workflow (`.github/workflows/deploy.yml`) does this
-for you on every push:
-
-1. Push this whole folder to a **new GitHub repository** (private is fine).
-2. In that repo: **Settings → Secrets and variables → Actions**, add three
-   repository secrets:
-   - `VPS_HOST` — your VPS's IP address or hostname
-   - `VPS_USER` — the SSH username you deploy with
-   - `VPS_SSH_KEY` — a private SSH key that can log into that user (generate
-     a dedicated deploy key with `ssh-keygen`, and add its **public** half to
-     `~/.ssh/authorized_keys` on the VPS for that user)
-3. From then on: whenever I hand you an updated `index.html` (or you edit it
-   yourself), commit and push to `main` — it's live on the VPS within
-   seconds, no manual server commands needed.
+Since there's no build step, "deploying" is just publishing files — once
+the GitHub Actions source is enabled (step 3 above), every push to `main`
+re-publishes `site/` automatically, live within about a minute. No manual
+server commands, no secrets to manage. From then on: whenever I hand you an
+updated `index.html` (or you edit it yourself), just:
+```bash
+git add -A && git commit -m "Update app" && git push
+```
 
 ## Notes
 
