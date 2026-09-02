@@ -15,14 +15,14 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
   :root{
-    --bg:#FAF6ED; --surface:#FFFFFF; --surface-2:#F4EAD3; --surface-3:#EDDDB8;
-    --ink:#2A211F; --ink-muted:#6B5D52; --ink-faint:#9A8A76;
-    --accent:#633532; --accent-ink:#FFFFFF; --accent-soft:#F4E19B;
+    --bg:#FFFFFF; --surface:#FFFFFF; --surface-2:#FFF1E5; --surface-3:#FFE3CC;
+    --ink:#26201D; --ink-muted:#6B5D52; --ink-faint:#9A8A76;
+    --accent:#633532; --accent-ink:#FFFFFF; --accent-soft:#FFEBD6;
     --accent2:#FE730C; --accent2-ink:#2A1204;
     --success:#3F8F5F; --success-soft:#E4F1E8;
     --warning:#B4720F; --warning-soft:#FBEDD8;
     --danger:#B4382C; --danger-soft:#F8E4E1;
-    --border:#E9DEC3; --shadow:0 1px 2px rgba(42,33,31,.07),0 4px 12px rgba(42,33,31,.06);
+    --border:#F0D9C2; --shadow:0 1px 2px rgba(42,33,31,.07),0 4px 12px rgba(42,33,31,.06);
   }
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
@@ -219,6 +219,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   var addingExpense = null;
   var lastSale = null;
   var reportsSub = 'sales';
+  var reportsRange = '7d';
   var cartCustomerName = '';
   var cartCustomerPhone = '';
   var cartPayment = 'Cash';
@@ -229,6 +230,11 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   var stateLoaded = !configured;
 
   function todayKey(ts){ var d = new Date(ts); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  var REPORT_RANGES = [['1d','Today'],['7d','7 Days'],['30d','1 Month'],['90d','Quarter']];
+  function rangeDays(r){ return r==='1d'?1 : r==='30d'?30 : r==='90d'?90 : 7; }
+  function rangeLabel(r){ var f=REPORT_RANGES.find(function(x){return x[0]===r;}); return f?f[1]:'7 Days'; }
+  function rangeStart(r){ var d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-(rangeDays(r)-1)); return d.getTime(); }
+  function inRange(ts, r){ return ts >= rangeStart(r); }
   function money(n){ return '₹' + Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2}); }
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
@@ -766,6 +772,15 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
       subs.appendChild(b);
     });
     w.appendChild(subs);
+    if(reportsSub!=='stock'){
+      var rangeRow = el('div','segmented'); rangeRow.style.marginTop='10px';
+      REPORT_RANGES.forEach(function(r){
+        var b = el('button','seg-btn'+(reportsRange===r[0]?' active':''), r[1]);
+        b.onclick = function(val){ return function(){ reportsRange=val; render(); }; }(r[0]);
+        rangeRow.appendChild(b);
+      });
+      w.appendChild(rangeRow);
+    }
     if(reportsSub==='sales') w.appendChild(renderSalesReport());
     else if(reportsSub==='purchases') w.appendChild(renderPurchasesReport());
     else if(reportsSub==='stock') w.appendChild(renderStockReport());
@@ -775,22 +790,22 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
 
   function renderSalesReport(){
     var w = document.createElement('div');
-    var today = todayKey(Date.now());
-    var todaySales = state.sales.filter(function(s){ return todayKey(s.ts)===today; });
-    var todayTotal = todaySales.reduce(function(sum,s){return sum+s.total;},0);
-    var todayCost = todaySales.reduce(function(sum,s){ return sum + s.items.reduce(function(a,it){return a+(it.costPrice||0)*it.qty;},0); },0);
-    var profit = todayTotal - todayCost;
+    var rangeSales = state.sales.filter(function(s){ return inRange(s.ts, reportsRange); });
+    var rangeTotal = rangeSales.reduce(function(sum,s){return sum+s.total;},0);
+    var rangeCost = rangeSales.reduce(function(sum,s){ return sum + s.items.reduce(function(a,it){return a+(it.costPrice||0)*it.qty;},0); },0);
+    var profit = rangeTotal - rangeCost;
 
     var stats = el('div','stat-row stat-row3');
-    var c1 = el('div','stat-card'); c1.appendChild(el('div','sv num', money(todayTotal))); c1.appendChild(el('div','sl','Sales'));
-    var c2 = el('div','stat-card'); c2.appendChild(el('div','sv num', String(todaySales.length))); c2.appendChild(el('div','sl','Bills'));
+    var c1 = el('div','stat-card'); c1.appendChild(el('div','sv num', money(rangeTotal))); c1.appendChild(el('div','sl','Sales'));
+    var c2 = el('div','stat-card'); c2.appendChild(el('div','sv num', String(rangeSales.length))); c2.appendChild(el('div','sl','Bills'));
     var c3 = el('div','stat-card'); c3.appendChild(el('div','sv num', money(profit))); c3.appendChild(el('div','sl','Profit (est.)'));
     stats.appendChild(c1); stats.appendChild(c2); stats.appendChild(c3);
     w.appendChild(stats);
 
-    w.appendChild(el('div','section-label','Last 7 days'));
+    var chartDays = Math.min(rangeDays(reportsRange), 14);
+    w.appendChild(el('div','section-label', 'Last ' + chartDays + ' days'));
     var days = [];
-    for(var i=6;i>=0;i--){ var d=new Date(); d.setDate(d.getDate()-i); days.push(d); }
+    for(var i=chartDays-1;i>=0;i--){ var d=new Date(); d.setDate(d.getDate()-i); days.push(d); }
     var totals = days.map(function(d){
       var k = todayKey(d.getTime());
       return state.sales.filter(function(s){return todayKey(s.ts)===k;}).reduce(function(sum,s){return sum+s.total;},0);
@@ -809,14 +824,15 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     });
     w.appendChild(chart);
 
-    w.appendChild(el('div','section-label','Today’s transactions'));
-    if(!todaySales.length){ w.appendChild(el('div','empty','No sales yet today.')); }
+    w.appendChild(el('div','section-label','Transactions — ' + rangeLabel(reportsRange)));
+    if(!rangeSales.length){ w.appendChild(el('div','empty','No sales in this period.')); }
     else{
       var card = el('div','card'); card.style.padding='2px 12px';
-      todaySales.slice().reverse().forEach(function(s){
+      rangeSales.slice().reverse().forEach(function(s){
         var row = el('div','sale-row');
         var l = document.createElement('div');
-        l.appendChild(el('div','st', new Date(s.ts).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) + ' · ' + (s.paymentMethod||'Cash')));
+        var when = reportsRange==='1d' ? new Date(s.ts).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) : new Date(s.ts).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+        l.appendChild(el('div','st', when + ' · ' + (s.paymentMethod||'Cash')));
         l.appendChild(el('div','sd', s.items.map(function(it){return it.name+' ×'+it.qty;}).join(', ') + (s.customerName?(' — '+s.customerName):'')));
         row.appendChild(l);
         var right = document.createElement('div'); right.style.textAlign='right'; right.style.display='flex'; right.style.flexDirection='column'; right.style.alignItems='flex-end'; right.style.gap='4px';
@@ -835,21 +851,21 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
 
   function renderPurchasesReport(){
     var w = document.createElement('div');
-    var today = todayKey(Date.now());
-    var todayP = state.purchases.filter(function(x){return todayKey(x.ts)===today;});
-    var total = todayP.reduce(function(s,x){return s+x.total;},0);
+    var rangeP = state.purchases.filter(function(x){ return inRange(x.ts, reportsRange); });
+    var total = rangeP.reduce(function(s,x){return s+x.total;},0);
     var stats = el('div','stat-row');
-    var c1=el('div','stat-card'); c1.appendChild(el('div','sv num',money(total))); c1.appendChild(el('div','sl','Spent today'));
-    var c2=el('div','stat-card'); c2.appendChild(el('div','sv num',String(todayP.length))); c2.appendChild(el('div','sl','Stock-ins today'));
+    var c1=el('div','stat-card'); c1.appendChild(el('div','sv num',money(total))); c1.appendChild(el('div','sl','Spent'));
+    var c2=el('div','stat-card'); c2.appendChild(el('div','sv num',String(rangeP.length))); c2.appendChild(el('div','sl','Stock-ins'));
     stats.appendChild(c1); stats.appendChild(c2); w.appendChild(stats);
-    w.appendChild(el('div','section-label','Today’s stock received'));
-    if(!todayP.length){ w.appendChild(el('div','empty','No stock recorded today.')); }
+    w.appendChild(el('div','section-label','Stock received — ' + rangeLabel(reportsRange)));
+    if(!rangeP.length){ w.appendChild(el('div','empty','No stock recorded in this period.')); }
     else{
       var card=el('div','card'); card.style.padding='2px 12px';
-      todayP.slice().reverse().forEach(function(x){
+      rangeP.slice().reverse().forEach(function(x){
         var row=el('div','sale-row');
         var l=document.createElement('div');
-        l.appendChild(el('div','st', new Date(x.ts).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})));
+        var when = reportsRange==='1d' ? new Date(x.ts).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) : new Date(x.ts).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+        l.appendChild(el('div','st', when));
         l.appendChild(el('div','sd', x.productName + ' ×' + x.qty + ' @ ' + money(x.costPrice)));
         row.appendChild(l);
         row.appendChild(el('div','sv num', money(x.total)));
@@ -896,15 +912,14 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
 
   function renderPaymentsReport(){
     var w = document.createElement('div');
-    var today = todayKey(Date.now());
-    var todaySales = state.sales.filter(function(s){return todayKey(s.ts)===today;});
+    var rangeSales = state.sales.filter(function(s){ return inRange(s.ts, reportsRange); });
     var byMethod = {};
     PAYMENT_METHODS.forEach(function(m){byMethod[m]=0;});
-    todaySales.forEach(function(s){ var m = s.paymentMethod||'Cash'; if(byMethod[m]===undefined) byMethod[m]=0; byMethod[m]+=s.total; });
-    var total = todaySales.reduce(function(s,x){return s+x.total;},0);
+    rangeSales.forEach(function(s){ var m = s.paymentMethod||'Cash'; if(byMethod[m]===undefined) byMethod[m]=0; byMethod[m]+=s.total; });
+    var total = rangeSales.reduce(function(s,x){return s+x.total;},0);
     var max = Math.max.apply(null, Object.keys(byMethod).map(function(k){return byMethod[k];}).concat([1]));
 
-    w.appendChild(el('div','section-label',"Today's takings by payment method"));
+    w.appendChild(el('div','section-label','Takings by payment method — ' + rangeLabel(reportsRange)));
     var card = el('div','card'); card.style.padding='14px';
     Object.keys(byMethod).forEach(function(m){
       var row = document.createElement('div'); row.style.marginBottom='12px';
@@ -920,8 +935,8 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     w.appendChild(card);
 
     var stats = el('div','stat-row');
-    var c1=el('div','stat-card'); c1.appendChild(el('div','sv num',money(total))); c1.appendChild(el('div','sl','Total collected today'));
-    var c2=el('div','stat-card'); c2.appendChild(el('div','sv num',String(todaySales.length))); c2.appendChild(el('div','sl','Transactions'));
+    var c1=el('div','stat-card'); c1.appendChild(el('div','sv num',money(total))); c1.appendChild(el('div','sl','Total collected'));
+    var c2=el('div','stat-card'); c2.appendChild(el('div','sv num',String(rangeSales.length))); c2.appendChild(el('div','sl','Transactions'));
     stats.appendChild(c1); stats.appendChild(c2);
     w.appendChild(stats);
     return w;
@@ -976,11 +991,6 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     e3.onclick = function(){ var n = prompt('Low stock threshold', String(state.lowStockThreshold||5)); if(n!==null && !isNaN(n)) setThreshold(n); };
     r3.appendChild(e3); card3.appendChild(r3);
     w.appendChild(card3);
-
-    w.appendChild(el('div','section-label','About'));
-    var card4 = el('div','card'); card4.style.padding='14px'; card4.style.color='var(--ink-muted)'; card4.style.fontSize='12.5px'; card4.style.lineHeight='1.5';
-    card4.textContent = 'This till stores everything in your own Google Sheet. The PIN is a simple lock, not strong security, so keep this link private.';
-    w.appendChild(card4);
 
     return w;
   }
