@@ -1,4 +1,4 @@
-# Till — self-hosted setup
+# Vedlakshana Store — self-hosted setup
 
 This is a plain static app (HTML/CSS/JS, no build step) with a free Google
 Sheet as its database. Three parts to set up, in this order:
@@ -6,7 +6,7 @@ Sheet as its database. Three parts to set up, in this order:
 ## 1. Google Sheet + Apps Script backend (free, ~10 minutes)
 
 1. Go to [sheets.google.com](https://sheets.google.com) and create a new blank
-   spreadsheet. Name it e.g. "Till Data".
+   spreadsheet. Name it e.g. "Vedlakshana Store Data".
 2. Create five tabs (bottom-left `+`), named **exactly**: `Settings`,
    `Products`, `Sales`, `Purchases`, `Expenses`. (Delete the default
    `Sheet1` once these exist — the app also creates any missing tab

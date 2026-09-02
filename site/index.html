@@ -235,7 +235,13 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   var bioBusy = false;
   var bioAutoTried = false;
 
-  /* ---------- fingerprint / face unlock (WebAuthn, device-local) ---------- */
+  /* ---------- fingerprint / face unlock (WebAuthn, device-local) ----------
+     Temporarily disabled — the "yoursite.github.io needs to verify..."
+     prompt looked unprofessional, and we're waiting on a custom domain
+     before turning this back on. To re-enable: uncomment this whole block
+     plus the two call sites tagged "fingerprint unlock — disabled" in
+     renderLock() and renderSettings() below.
+
   var BIO_KEY = 'vlk_bio_cred_id';
   function bioCredId(){ try{ return localStorage.getItem(BIO_KEY); }catch(e){ return null; } }
   function bufToB64(buf){ var bytes = new Uint8Array(buf), s=''; for(var i=0;i<bytes.length;i++) s+=String.fromCharCode(bytes[i]); return btoa(s); }
@@ -285,6 +291,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
       bioBusy=false; render();
     });
   }
+  ---------- end fingerprint / face unlock block ---------- */
 
   function todayKey(ts){ var d = new Date(ts); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
   var REPORT_RANGES = [['1d','Today'],['7d','7 Days'],['30d','1 Month'],['90d','Quarter'],['custom','Custom']];
@@ -514,6 +521,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
       return w;
     }
     w.appendChild(el('div','lock-title', state.storeName || 'Vedlakshana Store'));
+    /* fingerprint unlock — disabled (see the commented block near the top of the script)
     var credId = bioCredId();
     if(credId){
       w.appendChild(el('div','lock-sub', bioBusy ? 'Waiting for fingerprint…' : 'Use your fingerprint, or enter your PIN below'));
@@ -522,9 +530,9 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
       bioBtn.onclick = tryBioUnlock;
       w.appendChild(bioBtn);
       if(!bioAutoTried){ bioAutoTried = true; setTimeout(tryBioUnlock, 350); }
-    } else {
+    } else { */
       w.appendChild(el('div','lock-sub', configured ? 'Enter your 4-digit PIN' : 'Enter your 4-digit PIN — backend not configured yet, changes won\'t be saved'));
-    }
+    /* } */
     var dots = el('div','pin-dots');
     for(var i=0;i<4;i++) dots.appendChild(el('div','pin-dot'+(i<pinBuffer.length?(pinError?' err':' filled'):'')));
     w.appendChild(dots);
@@ -1113,7 +1121,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     w.appendChild(el('div','section-label','Sync'));
     var cardS = el('div','card'); cardS.style.padding='14px'; cardS.style.fontSize='13px'; cardS.style.color='var(--ink-muted)';
     cardS.textContent = configured
-      ? (syncStatus==='ok' ? 'Connected to your Google Sheet. Changes save automatically.' : syncStatus==='busy' ? 'Syncing…' : 'Could not reach the backend — check your internet connection or the Apps Script deployment.')
+      ? (syncStatus==='ok' ? 'Connected to your DB. Changes save automatically.' : syncStatus==='busy' ? 'Syncing…' : 'Could not reach the backend — check your internet connection or the Apps Script deployment.')
       : 'Backend not configured yet — open index.html and set SCRIPT_URL. Until then, data only stays on this device and resets on reload.';
     w.appendChild(cardS);
 
@@ -1145,6 +1153,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     var e2b = el('button','link-btn','Lock now');
     e2b.onclick = function(){ unlocked=false; bioAutoTried=false; tab='home'; render(); };
     r2b.appendChild(e2b); card2.appendChild(r2b);
+    /* fingerprint unlock — disabled (see the commented block near the top of the script)
     var r2c = el('div','settings-row');
     var l2c = document.createElement('div'); l2c.appendChild(el('div','sl2','Fingerprint unlock'));
     var credId2 = bioCredId();
@@ -1156,6 +1165,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
       r2c.appendChild(e2c);
     }
     card2.appendChild(r2c);
+    */
     w.appendChild(card2);
 
     w.appendChild(el('div','section-label','Stock alerts'));

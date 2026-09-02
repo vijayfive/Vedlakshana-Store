@@ -2,11 +2,11 @@
 # Caddy gets you free automatic HTTPS (required for "Add to Home Screen" /
 # Install app to show up on Android) with zero extra setup.
 #
-# Replace till.yourdomain.com with your real domain/subdomain, pointed at
+# Replace store.yourdomain.com with your real domain/subdomain, pointed at
 # your VPS's IP address via an A record first.
 
-till.yourdomain.com {
-    root * /var/www/till
+store.yourdomain.com {
+    root * /var/www/vedlakshana-store
     file_server
     encode gzip
 

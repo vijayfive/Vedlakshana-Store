@@ -3,7 +3,7 @@
 // the next time you're online; it only falls back to the cached copy when
 // offline. Static icons/manifest stay cache-first since they rarely change.
 // Data calls to the Google Apps Script backend always go straight to the network.
-const CACHE = 'till-shell-v3';
+const CACHE = 'vedlakshana-shell-v1';
 const SHELL = ['./', './index.html', './manifest.json', './favicon-32.png', './icon-180.png', './icon-192.png', './icon-512.png', './icon-192-maskable.png', './icon-512-maskable.png'];
 
 self.addEventListener('install', (e) => {
