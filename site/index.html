@@ -608,32 +608,13 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
 
     var lowT = state.lowStockThreshold||5;
     var lowCount = state.products.filter(function(p){return p.stock<=lowT;}).length;
-    w.appendChild(el('div','section-label','Stock'));
-    var stockCard = el('div','card'); stockCard.style.padding='14px'; stockCard.style.display='flex'; stockCard.style.alignItems='center'; stockCard.style.justifyContent='space-between'; stockCard.style.gap='10px';
-    var stockText = document.createElement('div');
-    stockText.appendChild(el('div','sl2', lowCount ? (lowCount + ' product' + (lowCount===1?'':'s') + ' low or out of stock') : 'All products well stocked'));
-    stockText.appendChild(el('div','sd2', state.products.length + ' product' + (state.products.length===1?'':'s') + ' total'));
-    stockCard.appendChild(stockText);
-    var stockBtn = el('button','link-btn','View');
-    stockBtn.style.flex='0 0 auto';
-    stockBtn.onclick = function(){ tab='rep'; reportsSub='stock'; render(); };
-    stockCard.appendChild(stockBtn);
-    w.appendChild(stockCard);
-
-    w.appendChild(el('div','section-label','Quick actions'));
-    var actions = document.createElement('div'); actions.style.display='grid'; actions.style.gridTemplateColumns='1fr 1fr'; actions.style.gap='10px'; actions.style.marginTop='12px';
-    function mkAction(icon,label,fn){
-      var b = el('button','card'); b.style.padding='16px 12px'; b.style.textAlign='center'; b.style.display='flex'; b.style.flexDirection='column'; b.style.alignItems='center'; b.style.gap='6px'; b.style.fontSize='13px'; b.style.fontWeight='600'; b.style.color='var(--ink)';
-      var ic = document.createElement('div'); ic.style.fontSize='22px'; ic.textContent=icon;
-      b.appendChild(ic); b.appendChild(document.createTextNode(label));
-      b.onclick = fn;
-      return b;
+    if(lowCount>0){
+      var lowNote = document.createElement('div'); lowNote.style.marginTop='10px'; lowNote.style.fontSize='12.5px'; lowNote.style.color='var(--warning)'; lowNote.style.fontWeight='600';
+      lowNote.textContent = '⚠ ' + lowCount + ' product' + (lowCount===1?'':'s') + ' low or out of stock';
+      lowNote.style.cursor='pointer';
+      lowNote.onclick = function(){ tab='rep'; reportsSub='stock'; render(); };
+      w.appendChild(lowNote);
     }
-    actions.appendChild(mkAction('🧾','New sale', function(){ tab='bill'; render(); }));
-    actions.appendChild(mkAction('💸','Add expense', function(){ addingExpense={description:'',amount:'',category:'Misc'}; render(); }));
-    actions.appendChild(mkAction('📦','Manage stock', function(){ tab='inv'; render(); }));
-    actions.appendChild(mkAction('📊','View reports', function(){ tab='rep'; render(); }));
-    w.appendChild(actions);
 
     if(state.sales.length){
       w.appendChild(el('div','section-label','Recent sales'));
