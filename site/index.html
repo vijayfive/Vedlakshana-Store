@@ -100,7 +100,7 @@
   .cart-bar{position:sticky; bottom:64px; margin:12px -16px 0; padding:12px 16px; background:var(--accent); color:var(--accent-ink); display:flex; align-items:center; justify-content:space-between; border-radius:14px 14px 0 0; box-shadow:0 -4px 14px rgba(0,0,0,.12);}
   .cart-bar .ct-info{font-size:13px; opacity:.92;}
   .cart-bar .ct-total{font-size:17px; font-weight:700;}
-  .cart-bar button{background:var(--accent2); color:var(--accent2-ink); border:none; padding:9px 16px; border-radius:10px; font-weight:600; font-size:13px;}
+  .cart-bar button{background:var(--accent2); color:#FFFFFF; border:none; padding:9px 16px; border-radius:10px; font-weight:700; font-size:13px; text-shadow:0 1px 1px rgba(0,0,0,.18);}
 
   .sheet-backdrop{position:fixed; inset:0; background:rgba(20,18,14,.45); z-index:40; display:flex; align-items:flex-end; justify-content:center;}
   .sheet{width:100%; max-width:560px; background:var(--surface); border-radius:20px 20px 0 0; padding:18px 18px calc(18px + env(safe-area-inset-bottom)); max-height:86vh; overflow-y:auto;}
@@ -116,7 +116,7 @@
   .cart-line-total{width:64px; text-align:right; font-size:13.5px; font-weight:600;}
   .sheet-total-row{display:flex; justify-content:space-between; align-items:baseline; padding:14px 0 4px; font-size:15px; font-weight:600;}
   .sheet-total-row .num{font-size:19px;}
-  .btn-primary{width:100%; background:var(--accent2); color:var(--accent2-ink); border:none; padding:14px; border-radius:12px; font-size:15px; font-weight:600; margin-top:10px;}
+  .btn-primary{width:100%; background:var(--accent2); color:#FFFFFF; border:none; padding:14px; border-radius:12px; font-size:15px; font-weight:700; margin-top:10px; text-shadow:0 1px 1px rgba(0,0,0,.18);}
   .btn-primary:disabled{opacity:.5;}
   .btn-secondary{width:100%; background:var(--surface-2); color:var(--ink); border:1px solid var(--border); padding:12px; border-radius:12px; font-size:14px; font-weight:500; margin-top:8px;}
   .btn-danger-text{width:100%; background:none; border:none; color:var(--danger); font-size:13px; padding:10px; margin-top:2px;}
@@ -220,6 +220,8 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   var lastSale = null;
   var reportsSub = 'sales';
   var reportsRange = '7d';
+  var customFrom = null;
+  var customTo = null;
   var cartCustomerName = '';
   var cartCustomerPhone = '';
   var cartPayment = 'Cash';
@@ -230,11 +232,26 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   var stateLoaded = !configured;
 
   function todayKey(ts){ var d = new Date(ts); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-  var REPORT_RANGES = [['1d','Today'],['7d','7 Days'],['30d','1 Month'],['90d','Quarter']];
+  var REPORT_RANGES = [['1d','Today'],['7d','7 Days'],['30d','1 Month'],['90d','Quarter'],['custom','Custom']];
   function rangeDays(r){ return r==='1d'?1 : r==='30d'?30 : r==='90d'?90 : 7; }
-  function rangeLabel(r){ var f=REPORT_RANGES.find(function(x){return x[0]===r;}); return f?f[1]:'7 Days'; }
+  function customBounds(){
+    var to = customTo ? new Date(customTo+'T23:59:59') : new Date();
+    var from = customFrom ? new Date(customFrom+'T00:00:00') : (function(){ var d=new Date(to); d.setDate(d.getDate()-6); d.setHours(0,0,0,0); return d; })();
+    return { from: from.getTime(), to: to.getTime() };
+  }
+  function rangeLabel(r){
+    if(r==='custom'){
+      if(!customFrom && !customTo) return 'Custom range';
+      var b = customBounds();
+      return new Date(b.from).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) + ' – ' + new Date(b.to).toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+    }
+    var f=REPORT_RANGES.find(function(x){return x[0]===r;}); return f?f[1]:'7 Days';
+  }
   function rangeStart(r){ var d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-(rangeDays(r)-1)); return d.getTime(); }
-  function inRange(ts, r){ return ts >= rangeStart(r); }
+  function inRange(ts, r){
+    if(r==='custom'){ var b=customBounds(); return ts>=b.from && ts<=b.to; }
+    return ts >= rangeStart(r);
+  }
   function money(n){ return '₹' + Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:2}); }
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
@@ -776,10 +793,33 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
       var rangeRow = el('div','segmented'); rangeRow.style.marginTop='10px';
       REPORT_RANGES.forEach(function(r){
         var b = el('button','seg-btn'+(reportsRange===r[0]?' active':''), r[1]);
-        b.onclick = function(val){ return function(){ reportsRange=val; render(); }; }(r[0]);
+        b.onclick = function(val){ return function(){
+          reportsRange=val;
+          if(val==='custom' && !customFrom && !customTo){
+            var t=new Date(), f=new Date(); f.setDate(f.getDate()-6);
+            customTo = t.toISOString().slice(0,10);
+            customFrom = f.toISOString().slice(0,10);
+          }
+          render();
+        }; }(r[0]);
         rangeRow.appendChild(b);
       });
       w.appendChild(rangeRow);
+      if(reportsRange==='custom'){
+        var dateRow = document.createElement('div'); dateRow.style.display='flex'; dateRow.style.gap='10px'; dateRow.style.marginTop='10px';
+        var fF = el('div','field'); fF.style.flex='1'; fF.style.marginTop='0';
+        fF.appendChild(el('label','','From'));
+        var fI = document.createElement('input'); fI.type='date'; fI.value=customFrom||''; if(customTo) fI.max=customTo;
+        fI.onchange = function(e){ customFrom = e.target.value; render(); };
+        fF.appendChild(fI);
+        var tF = el('div','field'); tF.style.flex='1'; tF.style.marginTop='0';
+        tF.appendChild(el('label','','To'));
+        var tI = document.createElement('input'); tI.type='date'; tI.value=customTo||''; if(customFrom) tI.min=customFrom;
+        tI.onchange = function(e){ customTo = e.target.value; render(); };
+        tF.appendChild(tI);
+        dateRow.appendChild(fF); dateRow.appendChild(tF);
+        w.appendChild(dateRow);
+      }
     }
     if(reportsSub==='sales') w.appendChild(renderSalesReport());
     else if(reportsSub==='purchases') w.appendChild(renderPurchasesReport());
@@ -802,7 +842,9 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     stats.appendChild(c1); stats.appendChild(c2); stats.appendChild(c3);
     w.appendChild(stats);
 
-    var chartDays = Math.min(rangeDays(reportsRange), 14);
+    var chartDays;
+    if(reportsRange==='custom'){ var cb=customBounds(); chartDays = Math.min(14, Math.max(1, Math.round((cb.to-cb.from)/86400000)+1)); }
+    else chartDays = Math.min(rangeDays(reportsRange), 14);
     w.appendChild(el('div','section-label', 'Last ' + chartDays + ' days'));
     var days = [];
     for(var i=chartDays-1;i>=0;i--){ var d=new Date(); d.setDate(d.getDate()-i); days.push(d); }
