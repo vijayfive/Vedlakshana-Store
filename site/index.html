@@ -231,6 +231,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   var toastTimer = null;
   var saving = false;
   var stateLoaded = !configured;
+  var loadFailed = false;
   var bioPlatformAvailable = false;
   var bioBusy = false;
   var bioAutoTried = false;
@@ -323,25 +324,41 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   /* ---------- backend sync ---------- */
   function loadState(){
     if(!configured){ render(); return; }
-    syncStatus = 'busy'; render();
+    syncStatus = 'busy'; loadFailed = false; render();
     fetch(SCRIPT_URL, {method:'GET'})
       .then(function(r){ return r.json(); })
       .then(function(data){
+        // A GET that comes back without a products array isn't a real sync —
+        // treat it the same as a network failure so we never proceed with
+        // (and later persist) an empty local state over real saved data.
         if(data && data.products){
           data.purchases = data.purchases || [];
           data.expenses = data.expenses || [];
           state = data;
+          syncStatus = 'ok';
+          stateLoaded = true;
+          loadFailed = false;
+        } else {
+          syncStatus = 'bad';
+          loadFailed = true;
         }
-        syncStatus = 'ok';
-        stateLoaded = true;
         render();
       })
-      .catch(function(){ syncStatus = 'bad'; stateLoaded = true; render(); });
+      .catch(function(){ syncStatus = 'bad'; loadFailed = true; render(); });
   }
 
   function persist(){
     render();
     if(!configured) return;
+    if(!stateLoaded || loadFailed){
+      // Safety net: never let a save reach the sheet before we've actually
+      // confirmed a successful load. Without this, a failed/incomplete sync
+      // followed by any user action would silently overwrite the whole
+      // Google Sheet with a near-empty local state (see Code.gs writeState,
+      // which always does a full clearContents()+rewrite of every sheet).
+      syncStatus = 'bad'; render();
+      return;
+    }
     saving = true;
     syncStatus = 'busy'; render();
     fetch(SCRIPT_URL, {
@@ -515,6 +532,15 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     var markImg = document.createElement('img'); markImg.src='./icon-192.png'; markImg.alt='Vedlakshana';
     mark.appendChild(markImg);
     w.appendChild(mark);
+    if(configured && loadFailed){
+      w.appendChild(el('div','lock-title','Couldn\'t connect'));
+      w.appendChild(el('div','lock-sub','Couldn\'t reach your Google Sheet, so it\'s not safe to continue — this stops the app from accidentally saving over your real data with a blank copy. Check your internet connection and try again.'));
+      var retryBtn = el('button','btn-primary','Retry');
+      retryBtn.style.maxWidth='260px';
+      retryBtn.onclick = function(){ loadState(); };
+      w.appendChild(retryBtn);
+      return w;
+    }
     if(configured && !stateLoaded){
       w.appendChild(el('div','lock-title','Loading store…'));
       w.appendChild(el('div','lock-sub','Fetching your store details'));
