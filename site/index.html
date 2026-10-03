@@ -691,7 +691,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     if(state.sales.length){
       w.appendChild(el('div','section-label','Recent sales'));
       var recentCard = el('div','card'); recentCard.style.padding='2px 12px';
-      state.sales.slice(-5).reverse().forEach(function(s){
+      state.sales.slice().sort(function(a,b){ return (b.ts||0)-(a.ts||0); }).slice(0,5).forEach(function(s){
         var row = el('div','sale-row');
         var l = document.createElement('div');
         l.appendChild(el('div','st', new Date(s.ts).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) + ' · ' + (s.paymentMethod||'Cash')));
@@ -1120,7 +1120,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     if(!rangeSales.length){ w.appendChild(el('div','empty','No sales in this period.')); }
     else{
       var card = el('div','card'); card.style.padding='2px 12px';
-      rangeSales.slice().reverse().forEach(function(s){
+      rangeSales.slice().sort(function(a,b){ return (b.ts||0)-(a.ts||0); }).forEach(function(s){
         var row = el('div','sale-row');
         var l = document.createElement('div');
         var when = reportsRange==='1d' ? new Date(s.ts).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) : new Date(s.ts).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
