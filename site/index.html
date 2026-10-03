@@ -849,8 +849,24 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     var stockI = el('input',''); stockI.type='number'; stockI.inputMode='numeric'; stockI.value=editingProduct.stock; stockI.placeholder='0';
     stockI.oninput=function(e){editingProduct.stock=e.target.value;}; stockF.appendChild(stockI); sheet.appendChild(stockF);
     var save = el('button','btn-primary', isNew?'Add product':'Save changes');
+    // Guards against a double-submit (a double-tap, or a second click event that
+    // was already queued before this handler ran) creating two near-identical
+    // products with different IDs. This flag lives in this render's own closure,
+    // so it's fresh every time the sheet is opened but stays set (blocking any
+    // trailing duplicate click) for as long as this particular sheet is open.
+    var submitting = false;
     save.onclick = function(){
-      if(!editingProduct.name.trim()) return;
+      if(submitting) return;
+      var name = editingProduct.name.trim();
+      if(!name){ alert('Enter a product name.'); return; }
+      var price = Number(editingProduct.price);
+      if(!(price>0)){ alert('Enter a sale price greater than 0.'); return; }
+      var dup = state.products.some(function(x){
+        return x.id!==editingProduct.id && x.name.trim().toLowerCase()===name.toLowerCase();
+      });
+      if(dup){ alert('A product named "'+name+'" already exists. Edit that one instead, or use a different name.'); return; }
+      submitting = true;
+      editingProduct.name = name;
       if(isNew) addProduct(editingProduct); else updateProduct(editingProduct.id, editingProduct);
       editingProduct = null; render();
     };
@@ -884,9 +900,12 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     var priceI = el('input',''); priceI.type='number'; priceI.inputMode='decimal'; priceI.placeholder='0'; priceI.value=p.price;
     priceI.oninput=function(e){p.price=e.target.value;}; priceF.appendChild(priceI); sheet.appendChild(priceF);
     var save = el('button','btn-primary','Add stock');
+    var submitting = false; // same double-submit guard as the product sheet — see note there
     save.onclick = function(){
+      if(submitting) return;
       var qty = Number(p.qty)||0;
-      if(qty<=0) return;
+      if(qty<=0){ alert('Enter a quantity greater than 0.'); return; }
+      submitting = true;
       recordPurchase(p.id, qty, Number(p.costPrice)||0, Number(p.price));
       restockProduct = null; render();
     };
@@ -979,8 +998,12 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     catS.onchange=function(e){ex.category=e.target.value;};
     catF.appendChild(catS); sheet.appendChild(catF);
     var save = el('button','btn-primary','Save expense');
+    var submitting = false; // same double-submit guard as the product sheet — see note there
     save.onclick = function(){
-      if(!ex.description.trim() || !(Number(ex.amount)>0)) return;
+      if(submitting) return;
+      if(!ex.description.trim()){ alert('Enter what the expense was for.'); return; }
+      if(!(Number(ex.amount)>0)){ alert('Enter an amount greater than 0.'); return; }
+      submitting = true;
       addExpense(ex); addingExpense=null; render();
     };
     sheet.appendChild(save);
