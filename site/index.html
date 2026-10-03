@@ -345,9 +345,17 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
   /* ---------- backend sync ---------- */
+  var loadSlow = false;
+  var loadSlowTimer = null;
   function loadState(){
     if(!configured){ render(); return; }
-    syncStatus = 'busy'; loadFailed = false; render();
+    syncStatus = 'busy'; loadFailed = false; loadSlow = false; render();
+    if(loadSlowTimer) clearTimeout(loadSlowTimer);
+    // Apps Script's free hosting can take a while to "wake up" if it's been
+    // idle — most often the first load of the day. This doesn't speed that
+    // up, it just stops the loading screen from feeling stuck once it's
+    // taking noticeably longer than a normal load.
+    loadSlowTimer = setTimeout(function(){ loadSlow = true; render(); }, 4000);
     fetch(SCRIPT_URL, {method:'GET'})
       .then(function(r){ return r.json(); })
       .then(function(data){
@@ -365,9 +373,14 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
           syncStatus = 'bad';
           loadFailed = true;
         }
+        if(loadSlowTimer){ clearTimeout(loadSlowTimer); loadSlowTimer=null; }
         render();
       })
-      .catch(function(){ syncStatus = 'bad'; loadFailed = true; render(); });
+      .catch(function(){
+        syncStatus = 'bad'; loadFailed = true;
+        if(loadSlowTimer){ clearTimeout(loadSlowTimer); loadSlowTimer=null; }
+        render();
+      });
   }
 
   function persist(){
@@ -566,7 +579,9 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     }
     if(configured && !stateLoaded){
       w.appendChild(el('div','lock-title','Loading store…'));
-      w.appendChild(el('div','lock-sub','Fetching your store details'));
+      w.appendChild(el('div','lock-sub', loadSlow
+        ? 'Still connecting — this can take a little while if the store has been idle. Hang tight.'
+        : 'Fetching your store details'));
       return w;
     }
     w.appendChild(el('div','lock-title', state.storeName || 'Vedlakshana Store'));
