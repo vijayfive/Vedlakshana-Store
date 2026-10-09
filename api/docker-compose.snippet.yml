@@ -1,0 +1,20 @@
+# Add this service to your existing docker-compose.yml, under `services:`,
+# alongside n8n / postgres / adminer. It builds from the Dockerfile in this
+# folder and joins the same default network those three are already on.
+
+  store-api:
+    build: ./Vedlakshana-Store/api    # adjust this path to wherever you place the api/ folder
+    container_name: store-api
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    env_file:
+      - ./Vedlakshana-Store/api/.env   # adjust path to match
+    depends_on:
+      - postgres
+
+# Notes:
+# - Bound to 127.0.0.1 only, same pattern as your other services — Nginx is
+#   what exposes it to the internet, over HTTPS, on store-api.sarwora.com.
+# - To rebuild after a code change:  docker compose up -d --build store-api
+# - To watch logs:                   docker compose logs -f store-api

@@ -183,11 +183,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 /* =========================================================================
-   CONFIGURE THESE TWO VALUES after you deploy Code.gs as a Google Apps
-   Script Web App (see SETUP.md). Everything else works as-is.
+   Backend: FastAPI + Postgres on the VPS (migrated from Google Apps Script).
+   LOAD_URL is used for reads, SAVE_URL for writes — see api/app/main.py.
+   The old Apps Script URL is kept below, commented out, as a rollback path:
+   just swap LOAD_URL/SAVE_URL back to it and redeploy if ever needed.
    ========================================================================= */
-var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyGNEoKRKWrkyeegdAfJfXNbqxJ5Juq_ibuoQ2MYnHl3rK-bdl5_0Wwxdw595y9ONL4/exec';
+var LOAD_URL = 'https://store-api.sarwora.com/state';
+var SAVE_URL = 'https://store-api.sarwora.com/sync';
 var WRITE_TOKEN = 'siddhnathmahadevkijay';
+// var OLD_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyGNEoKRKWrkyeegdAfJfXNbqxJ5Juq_ibuoQ2MYnHl3rK-bdl5_0Wwxdw595y9ONL4/exec';
 /* ========================================================================= */
 
 (function(){
@@ -206,7 +210,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   };
 
   var state = JSON.parse(JSON.stringify(DEFAULT_STATE));
-  var configured = SCRIPT_URL.indexOf('PASTE_YOUR') === -1;
+  var configured = LOAD_URL.indexOf('PASTE_YOUR') === -1;
   var syncStatus = configured ? 'busy' : 'bad'; // 'ok' | 'busy' | 'bad'
   var unlocked = false;
   var pinBuffer = '';
@@ -356,7 +360,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     // up, it just stops the loading screen from feeling stuck once it's
     // taking noticeably longer than a normal load.
     loadSlowTimer = setTimeout(function(){ loadSlow = true; render(); }, 4000);
-    fetch(SCRIPT_URL, {method:'GET'})
+    fetch(LOAD_URL, {method:'GET'})
       .then(function(r){ return r.json(); })
       .then(function(data){
         // A GET that comes back without a products array isn't a real sync —
@@ -397,9 +401,9 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     }
     saving = true;
     syncStatus = 'busy'; render();
-    fetch(SCRIPT_URL, {
+    fetch(SAVE_URL, {
       method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'}, // avoids a CORS preflight against Apps Script
+      headers:{'Content-Type':'application/json'},
       body: JSON.stringify({token:WRITE_TOKEN, state:state})
     })
       .then(function(r){ return r.json(); })
@@ -1241,7 +1245,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     var cardS = el('div','card'); cardS.style.padding='14px'; cardS.style.fontSize='13px'; cardS.style.color='var(--ink-muted)';
     cardS.textContent = configured
       ? (syncStatus==='ok' ? 'Connected to your Google Sheet. Changes save automatically.' : syncStatus==='busy' ? 'Syncing…' : 'Could not reach the backend — check your internet connection or the Apps Script deployment.')
-      : 'Backend not configured yet — open index.html and set SCRIPT_URL. Until then, data only stays on this device and resets on reload.';
+      : 'Backend not configured yet — open index.html and set LOAD_URL/SAVE_URL. Until then, data only stays on this device and resets on reload.';
     w.appendChild(cardS);
 
     w.appendChild(el('div','section-label','Store'));
