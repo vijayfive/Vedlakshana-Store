@@ -233,6 +233,8 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
   var cartCustomerName = '';
   var cartCustomerPhone = '';
   var cartPayment = 'Cash';
+  var cartBackdateOpen = false;
+  var cartBackdateValue = ''; // 'YYYY-MM-DDTHH:MM' from <input type="datetime-local">, empty = use current time
   var toastMsg = '';
   var toastAction = null;
   var toastTimer = null;
@@ -461,8 +463,15 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
       var p = state.products.find(function(x){return x.id===it.productId;});
       if(p) p.stock = Math.max(0, p.stock - it.qty);
     });
+    // Backdating: only used when the user explicitly picked a date/time and it
+    // isn't in the future. Otherwise this behaves exactly as before — Date.now().
+    var ts = Date.now();
+    if(cartBackdateValue){
+      var picked = new Date(cartBackdateValue).getTime();
+      if(picked && picked <= Date.now()) ts = picked;
+    }
     var sale = {
-      id: uid(), ts: Date.now(), items: items, total: total,
+      id: uid(), ts: ts, items: items, total: total,
       paymentMethod: cartPayment || 'Cash',
       customerName: (cartCustomerName||'').trim(),
       customerPhone: (cartCustomerPhone||'').trim()
@@ -471,6 +480,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     cart = {};
     sheetOpen = false;
     cartCustomerName = ''; cartCustomerPhone = ''; cartPayment = 'Cash';
+    cartBackdateOpen = false; cartBackdateValue = '';
     lastSale = sale;
     persist();
     showToast('Sale completed — ' + money(sale.total), {label:'Share bill', fn:function(){ sharePdfBill(sale); }});
@@ -800,6 +810,27 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
       });
       sheet.appendChild(seg);
 
+      // Backdating — collapsed by default, for entering a sale that actually
+      // happened earlier (e.g. during the migration window) with its real
+      // date/time instead of right now.
+      var moreBtn = el('button','btn-secondary', cartBackdateOpen ? 'Hide more options' : 'More options');
+      moreBtn.style.marginTop = '4px';
+      moreBtn.onclick = function(){ cartBackdateOpen = !cartBackdateOpen; render(); };
+      sheet.appendChild(moreBtn);
+      if(cartBackdateOpen){
+        sheet.appendChild(el('div','section-label','Sale date & time (optional — leave blank for now)'));
+        var dtF = el('div','field');
+        var dtI = el('input',''); dtI.type='datetime-local';
+        dtI.max = new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+        dtI.value = cartBackdateValue;
+        dtI.oninput = function(e){ cartBackdateValue = e.target.value; };
+        dtF.appendChild(dtI); sheet.appendChild(dtF);
+        if(cartBackdateValue){
+          var hint = el('div','cp','Will be recorded as ' + new Date(cartBackdateValue).toLocaleString('en-IN') + '.');
+          sheet.appendChild(hint);
+        }
+      }
+
       var tr = el('div','sheet-total-row');
       tr.appendChild(el('span','','Total'));
       tr.appendChild(el('span','num', money(total)));
@@ -808,7 +839,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
       done.onclick = completeSale;
       sheet.appendChild(done);
       var clear = el('button','btn-danger-text','Clear cart');
-      clear.onclick = function(){ cart={}; sheetOpen=false; render(); };
+      clear.onclick = function(){ cart={}; sheetOpen=false; cartBackdateOpen=false; cartBackdateValue=''; render(); };
       sheet.appendChild(clear);
     }
     var close = el('button','btn-secondary','Keep shopping');
@@ -1244,7 +1275,7 @@ var WRITE_TOKEN = 'siddhnathmahadevkijay';
     w.appendChild(el('div','section-label','Sync'));
     var cardS = el('div','card'); cardS.style.padding='14px'; cardS.style.fontSize='13px'; cardS.style.color='var(--ink-muted)';
     cardS.textContent = configured
-      ? (syncStatus==='ok' ? 'Connected to your Google Sheet. Changes save automatically.' : syncStatus==='busy' ? 'Syncing…' : 'Could not reach the backend — check your internet connection or the Apps Script deployment.')
+      ? (syncStatus==='ok' ? 'Connected to store server. Changes save automatically.' : syncStatus==='busy' ? 'Syncing…' : 'Could not reach the backend — check your internet connection or the server.')
       : 'Backend not configured yet — open index.html and set LOAD_URL/SAVE_URL. Until then, data only stays on this device and resets on reload.';
     w.appendChild(cardS);
 
